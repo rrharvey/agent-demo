@@ -1,0 +1,33 @@
+{
+  "name": "agent-poc",
+  "version": "1.0.0",
+  "main": "dist/agent.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/agent.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@langchain/anthropic": "^0.3.16",
+    "@langchain/core": "^0.3.43",
+    "@langchain/langgraph": "^0.2.63",
+    "dotenv": "^16.4.7",
+    "langchain": "^0.3.20",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@tsconfig/node22": "^22.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.29.1",
+    "@typescript-eslint/parser": "^8.29.1",
+    "eslint": "^9.24.0",
+    "eslint-config-prettier": "^10.1.1",
+    "tsx": "^4.19.3",
+    "typescript-eslint": "^8.29.1"
+  }
+}

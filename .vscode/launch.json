@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run agent.ts",
+      "type": "node",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeExecutable": "tsx",
+      "runtimeArgs": ["${workspaceFolder}/src/agent.ts"],
+      "console": "integratedTerminal"
+    }
+  ]
+}
