@@ -9,3 +9,6 @@ node_modules
 
 # SQLite
 timetracker.db*
+
+# build ouptut
+dist/
