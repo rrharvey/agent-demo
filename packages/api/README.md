@@ -26,38 +26,6 @@ The API follows a clean organization pattern:
 - Reporting and summary capabilities
 - Filtering options for time entries
 
-## API Endpoints
-
-The API provides the following endpoint categories:
-
-### Client Endpoints
-
-- GET `/api/clients` - Get all clients
-- GET `/api/clients/{id}` - Get a specific client
-- POST `/api/clients` - Create a new client
-- PUT `/api/clients/{id}` - Update a client
-- DELETE `/api/clients/{id}` - Delete a client
-
-### Project Endpoints
-
-- GET `/api/projects` - Get all projects
-- GET `/api/projects/{id}` - Get a specific project
-- POST `/api/projects` - Create a new project
-- PUT `/api/projects/{id}` - Update a project
-- DELETE `/api/projects/{id}` - Delete a project
-- GET `/api/clients/{clientId}/projects` - Get projects for a specific client
-
-### Time Entry Endpoints
-
-- GET `/api/time-entries` - Get all time entries
-- GET `/api/time-entries/{id}` - Get a specific time entry
-- POST `/api/time-entries` - Create a new time entry
-- PUT `/api/time-entries/{id}` - Update a time entry
-- DELETE `/api/time-entries/{id}` - Delete a time entry
-- GET `/api/projects/{projectId}/time-entries` - Get time entries for a specific project
-- POST `/api/time-entries/start` - Start a new time entry
-- PUT `/api/time-entries/{id}/stop` - Stop a time entry
-
 ### Reporting Endpoints
 
 - GET `/api/reports/time-entries` - Get filtered time entries
