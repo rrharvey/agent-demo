@@ -2,6 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "API Debug",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/packages/api/api.csproj"
+    },
+    {
       "name": "Run agent.ts",
       "type": "node",
       "request": "launch",

@@ -1,6 +1,7 @@
 using api.Data;
 using api.Endpoints;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore; // Add Scalar namespace
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi(); // Use .NET 9's built-in OpenAPI endpoint
+    app.MapScalarApiReference(); // Add Scalar API Reference UI
     
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

@@ -3,11 +3,6 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
-./**/*.db
-
-# dotenv files
-.env
-
 # User-specific files
 *.rsuser
 *.suo

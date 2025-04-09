@@ -1,5 +1,11 @@
+# dotenv files
+.env
+
 # Node
 node_modules
 
 # pnpm
 .pnpm-store
+
+# SQLite
+timetracker.db*
