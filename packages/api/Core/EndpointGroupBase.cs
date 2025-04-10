@@ -8,5 +8,11 @@ public abstract class EndpointGroupBase(string path)
 {
   public string Path { get; } = path;
 
-  public abstract void Map(WebApplication app);
+  public void Map(WebApplication app)
+  {
+    var group = app.MapGroup($"/{Path}").WithTags(Path);
+    Map(group);
+  }
+
+  public abstract void Map(RouteGroupBuilder api);
 }

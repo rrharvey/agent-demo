@@ -15,6 +15,7 @@ builder.Services.AddDbContext<Api.Data.ApplicationDbContext>(options =>
 
 // Add OpenAPI documentation
 builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
 
 // Register CQRS handlers
 builder.Services.AddCqrs();

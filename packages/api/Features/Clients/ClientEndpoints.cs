@@ -8,13 +8,10 @@ public class ClientsEndpoints : EndpointGroupBase
   public ClientsEndpoints()
     : base("clients") { }
 
-  public override void Map(WebApplication app)
+  public override void Map(RouteGroupBuilder api)
   {
-    var group = app.MapGroup(this);
-
     // GET /clients - Get all clients
-    group
-      .MapGet("/", GetAllClients)
+    api.MapGet("/", GetAllClients)
       .WithName("GetAllClients")
       .WithDescription("Retrieves all clients with their projects")
       .Produces<GetAllClientsResponse>(StatusCodes.Status200OK);
