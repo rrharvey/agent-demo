@@ -19,6 +19,14 @@ public class TimeEntryEndpoints : EndpointGroupBase
       .Produces<GetTimeEntriesForUserResult>(StatusCodes.Status200OK)
       .Produces(StatusCodes.Status400BadRequest);
 
+    // GET /time-entries/{id} - Get a time entry by ID
+    api.MapGet("/{id}", GetTimeEntryById)
+      .WithName("GetTimeEntryById")
+      .WithDescription("Retrieves a single time entry by ID")
+      .Produces<GetTimeEntryByIdResult>(StatusCodes.Status200OK)
+      .Produces(StatusCodes.Status404NotFound)
+      .Produces(StatusCodes.Status400BadRequest);
+
     // POST /time-entries - Create a new time entry
     api.MapPost("/", CreateTimeEntry)
       .WithName("CreateTimeEntry")
@@ -56,6 +64,30 @@ public class TimeEntryEndpoints : EndpointGroupBase
     {
       var query = new GetTimeEntriesForUserQuery(userId, projectId, startDate, endDate);
       var result = await handler.HandleAsync(query, cancellationToken);
+      return TypedResults.Ok(result);
+    }
+    catch (Exception ex)
+    {
+      return TypedResults.BadRequest(ex.Message);
+    }
+  }
+
+  private async Task<Results<Ok<GetTimeEntryByIdResult>, NotFound, BadRequest<string>>> GetTimeEntryById(
+    [FromRoute] int id,
+    [FromServices] IQueryHandler<GetTimeEntryByIdQuery, GetTimeEntryByIdResult> handler,
+    CancellationToken cancellationToken
+  )
+  {
+    try
+    {
+      var query = new GetTimeEntryByIdQuery(id);
+      var result = await handler.HandleAsync(query, cancellationToken);
+
+      if (result.TimeEntry == null)
+      {
+        return TypedResults.NotFound();
+      }
+
       return TypedResults.Ok(result);
     }
     catch (Exception ex)

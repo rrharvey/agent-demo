@@ -148,7 +148,7 @@ export function TimeEntryList() {
       </Box>
 
       <Paper component="form" onSubmit={handleFilterChange} sx={{ p: 2, mb: 3 }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="flex-end">
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
           <TextField
             id="startDate"
             name="startDate"
@@ -157,7 +157,7 @@ export function TimeEntryList() {
             defaultValue={startDate}
             InputLabelProps={{ shrink: true }}
             inputProps={{ max: endDate }}
-            fullWidth
+            sx={{ minWidth: 300 }}
           />
           <TextField
             id="endDate"
@@ -167,10 +167,10 @@ export function TimeEntryList() {
             defaultValue={endDate}
             InputLabelProps={{ shrink: true }}
             inputProps={{ min: startDate }}
-            fullWidth
+            sx={{ minWidth: 300 }}
           />
-          <Button type="submit" variant="outlined" startIcon={<FilterIcon />}>
-            Apply Filter
+          <Button type="submit" variant="text" startIcon={<FilterIcon />}>
+            Filter
           </Button>
         </Stack>
       </Paper>
@@ -210,7 +210,13 @@ export function TimeEntryList() {
                     </TableCell>
                     <TableCell>{entry.hours}</TableCell>
                     <TableCell align="right">
-                      <Button href={`/time-entries/${entry.id}`} size="small" startIcon={<EditIcon />} sx={{ mr: 1 }}>
+                      <Button
+                        component={Link}
+                        to={`/time-entries/${entry.id}`}
+                        size="small"
+                        startIcon={<EditIcon />}
+                        sx={{ mr: 1 }}
+                      >
                         Edit
                       </Button>
                       <Button

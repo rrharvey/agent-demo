@@ -77,14 +77,11 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
     queryKey: ['timeEntry', timeEntryId],
     queryFn: async () => {
       if (mode === 'edit' && timeEntryId) {
-        // Since we don't have a dedicated endpoint to get a single time entry,
-        // we'll get all entries for the user and find the one we need
-        const result = await timeEntriesService.getTimeEntries({ userId })
-        const entry = result.timeEntries.find((entry) => entry.id === timeEntryId)
-        if (!entry) {
+        const timeEntry = await timeEntriesService.getTimeEntryById(timeEntryId)
+        if (!timeEntry) {
           throw new Error('Time entry not found')
         }
-        return entry
+        return timeEntry
       }
       return null
     },

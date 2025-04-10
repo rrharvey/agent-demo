@@ -1,5 +1,12 @@
 import { apiClient, handleApiResponse } from './client'
-import { TimeEntry, TimeEntryCreateDto, TimeEntryUpdateDto, GetTimeEntriesParams, GetTimeEntriesResult } from './types'
+import {
+  TimeEntry,
+  TimeEntryCreateDto,
+  TimeEntryUpdateDto,
+  GetTimeEntriesParams,
+  GetTimeEntriesResult,
+  GetTimeEntryByIdResult,
+} from './types'
 
 // Time entries API service
 export const timeEntriesService = {
@@ -26,6 +33,13 @@ export const timeEntriesService = {
     return handleApiResponse<GetTimeEntriesResult>(
       apiClient.get('time-entries', { searchParams }),
       GetTimeEntriesResult,
+    )
+  },
+
+  // Get a specific time entry by ID
+  async getTimeEntryById(id: number): Promise<TimeEntry | null> {
+    return handleApiResponse<GetTimeEntryByIdResult>(apiClient.get(`time-entries/${id}`), GetTimeEntryByIdResult).then(
+      (result) => result.timeEntry,
     )
   },
 

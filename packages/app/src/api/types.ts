@@ -52,12 +52,17 @@ export const GetTimeEntriesResult = z.object({
   timeEntries: z.array(TimeEntry),
 })
 
+export const GetTimeEntryByIdResult = z.object({
+  timeEntry: TimeEntry.nullable(),
+})
+
 // Time entry types - inferred from Zod schemas
 export type TimeEntry = z.infer<typeof TimeEntry>
 export type TimeEntryCreateDto = z.infer<typeof TimeEntryCreateDto>
 export type TimeEntryUpdateDto = z.infer<typeof TimeEntryUpdateDto>
 export type GetTimeEntriesParams = z.infer<typeof GetTimeEntriesParams>
 export type GetTimeEntriesResult = z.infer<typeof GetTimeEntriesResult>
+export type GetTimeEntryByIdResult = z.infer<typeof GetTimeEntryByIdResult>
 
 // Client and Project types - inferred from Zod schemas
 export type Client = z.infer<typeof Client>
