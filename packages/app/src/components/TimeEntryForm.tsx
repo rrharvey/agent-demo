@@ -52,6 +52,14 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
   }>(defaultFormValues)
 
   const [selectedClientId, setSelectedClientId] = useState<string>('')
+  const [hoursError, setHoursError] = useState<string>('')
+
+  // Validation function for hours - rounds to nearest 15 min and validates
+  const validateAndRoundHours = (value: number): number => {
+    // Round to nearest 0.25 (15 minutes)
+    const rounded = Math.round(value * 4) / 4
+    return rounded
+  }
 
   // Fetch clients and their projects
   const {
@@ -172,27 +180,70 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
 
-    setFormValues((prev) => ({
-      ...prev,
-      [name]: name === 'hours' ? parseFloat(value) : value,
-    }))
+    if (name === 'hours') {
+      const numValue = parseFloat(value)
+
+      // Validate hours
+      if (isNaN(numValue)) {
+        setHoursError('Hours is required')
+      } else if (numValue <= 0) {
+        setHoursError('Hours must be greater than zero')
+      } else {
+        setHoursError('')
+      }
+
+      // Still set the value even if invalid so user can correct it
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: numValue,
+      }))
+    } else {
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
+  }
+
+  // Handle hours blur to round the value
+  const handleHoursBlur = () => {
+    if (!isNaN(formValues.hours) && formValues.hours > 0) {
+      const roundedHours = validateAndRoundHours(formValues.hours)
+      setFormValues((prev) => ({
+        ...prev,
+        hours: roundedHours,
+      }))
+    }
   }
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
+    // Validate hours before submission
+    if (formValues.hours <= 0) {
+      setHoursError('Hours must be greater than zero')
+      return
+    }
+
     try {
+      // Round hours to nearest 15 minutes if needed
+      const finalHours = validateAndRoundHours(formValues.hours)
+      const submissionValues = {
+        ...formValues,
+        hours: finalHours,
+      }
+
       if (mode === 'create') {
         const createData: TimeEntryCreateDto = {
-          ...formValues,
+          ...submissionValues,
           userId,
         }
         createMutation.mutate(createData)
       } else if (mode === 'edit' && timeEntryId && timeEntryData) {
         const updateData: TimeEntryUpdateDto = {
           id: timeEntryId,
-          ...formValues,
+          ...submissionValues,
           userId: timeEntryData.userId,
         }
         updateMutation.mutate(updateData)
@@ -309,9 +360,16 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                 type="number"
                 value={formValues.hours}
                 onChange={handleInputChange}
+                onBlur={handleHoursBlur}
                 required
                 fullWidth
-                inputProps={{ step: '0.25', min: '0', max: '24' }}
+                error={!!hoursError}
+                helperText={hoursError || 'Hours will be rounded to nearest 15 min'}
+                inputProps={{
+                  step: '0.25',
+                  min: '0.25',
+                  max: '24',
+                }}
               />
             </Box>
 
@@ -328,7 +386,7 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={isPending || !formValues.projectId}
+                disabled={isPending || !formValues.projectId || !!hoursError || formValues.hours <= 0}
                 startIcon={<SaveIcon />}
               >
                 {isPending ? 'Saving...' : 'Save'}
