@@ -350,7 +350,7 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                 onChange={handleInputChange}
                 required
                 fullWidth
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
 
               <TextField
@@ -365,10 +365,13 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                 fullWidth
                 error={!!hoursError}
                 helperText={hoursError || 'Hours will be rounded to nearest 15 min'}
-                inputProps={{
-                  step: '0.25',
-                  min: '0.25',
-                  max: '24',
+                slotProps={{
+                  inputLabel: { shrink: true },
+                  htmlInput: {
+                    step: '0.25',
+                    min: '0.25',
+                    max: '24',
+                  },
                 }}
               />
             </Box>

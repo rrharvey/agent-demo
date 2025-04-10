@@ -155,8 +155,10 @@ export function TimeEntryList() {
             label="Start Date"
             type="date"
             defaultValue={startDate}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ max: endDate }}
+            slotProps={{
+              inputLabel: { shrink: true },
+              htmlInput: { max: endDate },
+            }}
             sx={{ minWidth: 300 }}
           />
           <TextField
@@ -165,8 +167,10 @@ export function TimeEntryList() {
             label="End Date"
             type="date"
             defaultValue={endDate}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ min: startDate }}
+            slotProps={{
+              inputLabel: { shrink: true },
+              htmlInput: { min: startDate },
+            }}
             sx={{ minWidth: 300 }}
           />
           <Button type="submit" variant="text" startIcon={<FilterIcon />}>
