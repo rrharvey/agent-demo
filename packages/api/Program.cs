@@ -1,3 +1,4 @@
+using Api;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,5 +25,7 @@ using (var scope = app.Services.CreateScope())
   var dbContext = scope.ServiceProvider.GetRequiredService<Api.Data.ApplicationDbContext>();
   dbContext.Database.EnsureCreated();
 }
+
+app.MapEndpoints();
 
 app.Run();
