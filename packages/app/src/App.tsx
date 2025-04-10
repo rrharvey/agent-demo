@@ -1,7 +1,8 @@
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Outlet, RouterProvider, createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { TimeEntryList } from './components/TimeEntryList'
 import { TimeEntryForm } from './components/TimeEntryForm'
+import { TimeEntryList } from './components/TimeEntryList'
 
 // Root route with layout
 const rootRoute = createRootRoute({
@@ -10,7 +11,8 @@ const rootRoute = createRootRoute({
       <main className="app-content">
         <Outlet />
       </main>
-      {import.meta.env.DEV && <TanStackRouterDevtools />}
+      <TanStackRouterDevtools />
+      <ReactQueryDevtools initialIsOpen={false} />
     </div>
   ),
 })
