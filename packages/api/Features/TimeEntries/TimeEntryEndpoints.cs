@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Api.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +15,8 @@ public class TimeEntryEndpoints : EndpointGroupBase
     // GET /time-entries - Get time entries for a user
     api.MapGet("/", GetTimeEntriesForUser)
       .WithName("GetTimeEntriesForUser")
-      .WithDescription("Retrieves all time entries for a specific user")
-      .Produces<List<TimeEntry>>(StatusCodes.Status200OK)
+      .WithDescription("Retrieves time entries for a user with optional filtering by project and date range")
+      .Produces<GetTimeEntriesForUserResult>(StatusCodes.Status200OK)
       .Produces(StatusCodes.Status400BadRequest);
 
     // POST /time-entries - Create a new time entry
@@ -25,7 +26,7 @@ public class TimeEntryEndpoints : EndpointGroupBase
       .Produces<TimeEntry>(StatusCodes.Status201Created)
       .Produces(StatusCodes.Status400BadRequest);
 
-    // PUT /time-entries/{id} - Update a time entry
+    // PUT /time-entries/{id} - Update an existing time entry
     api.MapPut("/{id}", UpdateTimeEntry)
       .WithName("UpdateTimeEntry")
       .WithDescription("Updates an existing time entry")
@@ -38,26 +39,29 @@ public class TimeEntryEndpoints : EndpointGroupBase
       .WithName("DeleteTimeEntry")
       .WithDescription("Deletes a time entry")
       .Produces(StatusCodes.Status204NoContent)
-      .Produces(StatusCodes.Status404NotFound);
+      .Produces(StatusCodes.Status404NotFound)
+      .Produces(StatusCodes.Status400BadRequest);
   }
 
-  private async Task<Results<Ok<List<TimeEntry>>, BadRequest<string>>> GetTimeEntriesForUser(
+  private async Task<Results<Ok<GetTimeEntriesForUserResult>, BadRequest<string>>> GetTimeEntriesForUser(
     [FromQuery] string userId,
     [FromQuery] Guid? projectId = null,
-    [FromQuery] DateOnly? startDate = null,
-    [FromQuery] DateOnly? endDate = null,
-    [FromServices] IQueryHandler<GetTimeEntriesForUserQuery, List<TimeEntry>> handler = null!,
+    [FromQuery] [Description("Defaults to the first day of the previous month.")] DateOnly? startDate = null,
+    [FromQuery] [Description("Defaults to the last day of the current month.")] DateOnly? endDate = null,
+    [FromServices] IQueryHandler<GetTimeEntriesForUserQuery, GetTimeEntriesForUserResult> handler = null!,
     CancellationToken cancellationToken = default
   )
   {
-    if (string.IsNullOrEmpty(userId))
+    try
     {
-      return TypedResults.BadRequest("UserId is required");
+      var query = new GetTimeEntriesForUserQuery(userId, projectId, startDate, endDate);
+      var result = await handler.HandleAsync(query, cancellationToken);
+      return TypedResults.Ok(result);
     }
-
-    var query = new GetTimeEntriesForUserQuery(userId, projectId, startDate, endDate);
-    var result = await handler.HandleAsync(query, cancellationToken);
-    return TypedResults.Ok(result);
+    catch (Exception ex)
+    {
+      return TypedResults.BadRequest(ex.Message);
+    }
   }
 
   private async Task<Results<Created<TimeEntry>, BadRequest<string>>> CreateTimeEntry(
@@ -69,7 +73,7 @@ public class TimeEntryEndpoints : EndpointGroupBase
     try
     {
       var result = await handler.HandleAsync(command, cancellationToken);
-      return TypedResults.Created($"/time-entries/{result.Id}", result);
+      return TypedResults.Created($"/time-entries?userId={result.UserId}", result);
     }
     catch (Exception ex)
     {
@@ -84,16 +88,16 @@ public class TimeEntryEndpoints : EndpointGroupBase
     CancellationToken cancellationToken
   )
   {
-    if (id != command.Id)
-    {
-      return TypedResults.BadRequest("ID in route must match ID in body");
-    }
-
     try
     {
+      if (id != command.Id)
+      {
+        return TypedResults.BadRequest("ID in route must match ID in request body");
+      }
+
       var result = await handler.HandleAsync(command, cancellationToken);
 
-      if (result is null)
+      if (result == null)
       {
         return TypedResults.NotFound();
       }
@@ -106,20 +110,26 @@ public class TimeEntryEndpoints : EndpointGroupBase
     }
   }
 
-  private async Task<Results<NoContent, NotFound>> DeleteTimeEntry(
+  private async Task<Results<NoContent, NotFound, BadRequest<string>>> DeleteTimeEntry(
     [FromRoute] int id,
     [FromServices] ICommandHandler<DeleteTimeEntryCommand, bool> handler,
     CancellationToken cancellationToken
   )
   {
-    var command = new DeleteTimeEntryCommand(id);
-    var result = await handler.HandleAsync(command, cancellationToken);
-
-    if (!result)
+    try
     {
-      return TypedResults.NotFound();
-    }
+      var result = await handler.HandleAsync(new DeleteTimeEntryCommand(id), cancellationToken);
 
-    return TypedResults.NoContent();
+      if (!result)
+      {
+        return TypedResults.NotFound();
+      }
+
+      return TypedResults.NoContent();
+    }
+    catch (Exception ex)
+    {
+      return TypedResults.BadRequest(ex.Message);
+    }
   }
 }

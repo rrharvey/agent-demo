@@ -9,12 +9,14 @@ public record GetTimeEntriesForUserQuery(
   Guid? ProjectId = null,
   DateOnly? StartDate = null,
   DateOnly? EndDate = null
-) : IQuery<List<TimeEntry>>;
+) : IQuery<GetTimeEntriesForUserResult>;
+
+public record GetTimeEntriesForUserResult(List<TimeEntry> TimeEntries);
 
 public class GetTimeEntriesForUserHandler(ApplicationDbContext dbContext)
-  : IQueryHandler<GetTimeEntriesForUserQuery, List<TimeEntry>>
+  : IQueryHandler<GetTimeEntriesForUserQuery, GetTimeEntriesForUserResult>
 {
-  public async Task<List<TimeEntry>> HandleAsync(
+  public async Task<GetTimeEntriesForUserResult> HandleAsync(
     GetTimeEntriesForUserQuery query,
     CancellationToken cancellationToken = default
   )
@@ -32,6 +34,7 @@ public class GetTimeEntriesForUserHandler(ApplicationDbContext dbContext)
 
     queryable = queryable.Where(te => te.Date >= startDate && te.Date <= endDate);
 
-    return await queryable.ToListAsync(cancellationToken);
+    var timeEntries = await queryable.ToListAsync(cancellationToken);
+    return new GetTimeEntriesForUserResult(timeEntries);
   }
 }
