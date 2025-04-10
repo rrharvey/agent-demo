@@ -49,7 +49,13 @@ export function TimeEntryList() {
     isLoading: isLoadingTimeEntries,
     isError: isErrorTimeEntries,
     error: timeEntriesError,
-  } = useQuery(getTimeEntriesForUserQuery('user123'))
+  } = useQuery(
+    getTimeEntriesForUserQuery({
+      userId: 'user123',
+      startDate,
+      endDate,
+    }),
+  )
 
   // Use the query options pattern for fetching clients
   const { data: clients, isLoading: isLoadingClients } = useQuery(getAllClientsQuery())

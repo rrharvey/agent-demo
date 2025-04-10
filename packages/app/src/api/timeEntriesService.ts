@@ -6,20 +6,37 @@ import {
   TimeEntry,
   TimeEntryCreateDto,
   TimeEntryUpdateDto,
+  GetTimeEntriesResult,
 } from './types'
 
 // Query option creators for time entries
 export const timeEntryKeys = {
   single: (id: number) => ['timeEntry', id] as const,
-  forUser: ({ userId }: GetTimeEntriesParams) => ['timeEntries', userId] as const,
+  forUser: ({ userId, projectId, startDate, endDate }: GetTimeEntriesParams) =>
+    ['timeEntries', userId, projectId, startDate, endDate] as const,
   all: () => ['timeEntries'] as const,
 }
 
 // Service functions for time entries
 export const timeEntriesService = {
   // Get all time entries for a user
-  async getTimeEntriesForUser(userId: string): Promise<{ timeEntries: TimeEntry[] }> {
-    return apiClient(`time-entries?userId=${userId}`, { method: 'GET' }).json()
+  async getTimeEntriesForUser(params: GetTimeEntriesParams): Promise<GetTimeEntriesResult> {
+    const queryParams = new URLSearchParams()
+    queryParams.append('userId', params.userId)
+
+    if (params.projectId) {
+      queryParams.append('projectId', params.projectId)
+    }
+
+    if (params.startDate) {
+      queryParams.append('startDate', params.startDate)
+    }
+
+    if (params.endDate) {
+      queryParams.append('endDate', params.endDate)
+    }
+
+    return apiClient(`time-entries?${queryParams.toString()}`, { method: 'GET' }).json()
   },
 
   // Get a specific time entry by ID
@@ -57,8 +74,8 @@ export const getTimeEntryByIdQuery = (id: number) =>
     enabled: !!id,
   })
 
-export const getTimeEntriesForUserQuery = (userId: string) =>
+export const getTimeEntriesForUserQuery = (params: GetTimeEntriesParams) =>
   queryOptions({
-    queryKey: timeEntryKeys.forUser({ userId }),
-    queryFn: () => timeEntriesService.getTimeEntriesForUser(userId),
+    queryKey: timeEntryKeys.forUser(params),
+    queryFn: () => timeEntriesService.getTimeEntriesForUser(params),
   })
