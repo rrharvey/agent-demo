@@ -4,7 +4,27 @@ import { format } from 'date-fns'
 import { useState, useEffect } from 'react'
 import { timeEntriesService } from '../api/timeEntriesService'
 import { clientsService } from '../api/clientsService'
-import { TimeEntry, TimeEntryCreateDto, TimeEntryUpdateDto, Client, Project } from '../api/types'
+import { TimeEntryCreateDto, TimeEntryUpdateDto, Project } from '../api/types'
+// MUI imports
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Container,
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+  Alert,
+  SelectChangeEvent,
+} from '@mui/material'
+import { Save as SaveIcon, Cancel as CancelIcon } from '@mui/icons-material'
 
 interface TimeEntryFormProps {
   mode: 'create' | 'edit'
@@ -138,17 +158,27 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
     },
   })
 
-  // Handle form input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement | HTMLSelectElement
-    if (name === 'clientId') {
-      setSelectedClientId(value)
-    } else {
-      setFormValues((prev) => ({
-        ...prev,
-        [name]: type === 'number' ? parseFloat(value) : value,
-      }))
-    }
+  // Handle client selection change
+  const handleClientChange = (event: SelectChangeEvent<string>) => {
+    setSelectedClientId(event.target.value)
+  }
+
+  // Handle project selection change
+  const handleProjectChange = (event: SelectChangeEvent<string>) => {
+    setFormValues((prev) => ({
+      ...prev,
+      projectId: event.target.value,
+    }))
+  }
+
+  // Handle text input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: name === 'hours' ? parseFloat(value) : value,
+    }))
   }
 
   // Handle form submission
@@ -177,94 +207,139 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
 
   // Loading state
   if (isLoadingClients || (mode === 'edit' && isLoadingTimeEntry)) {
-    return <div className="loading">Loading...</div>
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    )
   }
 
   // Error state
   if (isErrorFetchingClients) {
-    return <div className="error">Error loading clients: {(clientsFetchError as Error).message}</div>
+    return (
+      <Alert severity="error" sx={{ mt: 2 }}>
+        Error loading clients: {(clientsFetchError as Error).message}
+      </Alert>
+    )
   }
 
   if (mode === 'edit' && isErrorFetchingTimeEntry) {
-    return <div className="error">Error: {(timeEntryFetchError as Error).message}</div>
+    return (
+      <Alert severity="error" sx={{ mt: 2 }}>
+        Error: {(timeEntryFetchError as Error).message}
+      </Alert>
+    )
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending
   const projects = getProjectsForClient(selectedClientId)
+  const noProjectsAvailable = selectedClientId && projects.length === 0
 
   return (
-    <div className="time-entry-form-container">
-      <h2>{mode === 'create' ? 'Create' : 'Edit'} Time Entry</h2>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Card>
+        <CardContent>
+          <Typography variant="h5" component="h2" gutterBottom>
+            {mode === 'create' ? 'Create' : 'Edit'} Time Entry
+          </Typography>
 
-      <form className="time-entry-form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="clientId">Client</label>
-          <select id="clientId" name="clientId" value={selectedClientId} onChange={handleInputChange} required>
-            <option value="">Select a client</option>
-            {clientsData?.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
-            ))}
-          </select>
-        </div>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
+            <Box sx={{ mb: 3 }}>
+              <FormControl fullWidth required>
+                <InputLabel id="client-select-label">Client</InputLabel>
+                <Select
+                  labelId="client-select-label"
+                  id="clientId"
+                  name="clientId"
+                  value={selectedClientId}
+                  label="Client"
+                  onChange={handleClientChange}
+                >
+                  <MenuItem value="">
+                    <em>Select a client</em>
+                  </MenuItem>
+                  {clientsData?.map((client) => (
+                    <MenuItem key={client.id} value={client.id}>
+                      {client.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
 
-        <div className="form-group">
-          <label htmlFor="projectId">Project</label>
-          <select
-            id="projectId"
-            name="projectId"
-            value={formValues.projectId}
-            onChange={handleInputChange}
-            required
-            disabled={!selectedClientId || projects.length === 0}
-          >
-            <option value="">Select a project</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
-          {selectedClientId && projects.length === 0 && (
-            <div className="form-error">No projects available for this client</div>
-          )}
-        </div>
+            <Box sx={{ mb: 3 }}>
+              <FormControl fullWidth required error={Boolean(noProjectsAvailable)}>
+                <InputLabel id="project-select-label">Project</InputLabel>
+                <Select
+                  labelId="project-select-label"
+                  id="projectId"
+                  name="projectId"
+                  value={formValues.projectId}
+                  label="Project"
+                  onChange={handleProjectChange}
+                  disabled={!selectedClientId || projects.length === 0}
+                >
+                  <MenuItem value="">
+                    <em>Select a project</em>
+                  </MenuItem>
+                  {projects.map((project) => (
+                    <MenuItem key={project.id} value={project.id}>
+                      {project.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {noProjectsAvailable && <FormHelperText>No projects available for this client</FormHelperText>}
+              </FormControl>
+            </Box>
 
-        <div className="form-group">
-          <label htmlFor="date">Date</label>
-          <input type="date" id="date" name="date" value={formValues.date} onChange={handleInputChange} required />
-        </div>
+            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+              <TextField
+                id="date"
+                name="date"
+                label="Date"
+                type="date"
+                value={formValues.date}
+                onChange={handleInputChange}
+                required
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
 
-        <div className="form-group">
-          <label htmlFor="hours">Hours</label>
-          <input
-            type="number"
-            id="hours"
-            name="hours"
-            value={formValues.hours}
-            onChange={handleInputChange}
-            step="0.25"
-            min="0"
-            max="24"
-            required
-          />
-        </div>
+              <TextField
+                id="hours"
+                name="hours"
+                label="Hours"
+                type="number"
+                value={formValues.hours}
+                onChange={handleInputChange}
+                required
+                fullWidth
+                inputProps={{ step: '0.25', min: '0', max: '24' }}
+              />
+            </Box>
 
-        <div className="form-actions">
-          <button
-            type="button"
-            className="button cancel-button"
-            onClick={() => navigate({ to: '/time-entries' })}
-            disabled={isPending}
-          >
-            Cancel
-          </button>
-          <button type="submit" className="button save-button" disabled={isPending || !formValues.projectId}>
-            {isPending ? 'Saving...' : 'Save'}
-          </button>
-        </div>
-      </form>
-    </div>
+            <Stack direction="row" spacing={2} sx={{ mt: 3, justifyContent: 'flex-end' }}>
+              <Button
+                variant="outlined"
+                onClick={() => navigate({ to: '/time-entries' })}
+                disabled={isPending}
+                startIcon={<CancelIcon />}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={isPending || !formValues.projectId}
+                startIcon={<SaveIcon />}
+              >
+                {isPending ? 'Saving...' : 'Save'}
+              </Button>
+            </Stack>
+          </Box>
+        </CardContent>
+      </Card>
+    </Container>
   )
 }

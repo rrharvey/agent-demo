@@ -5,11 +5,37 @@ import { useState } from 'react'
 import { timeEntriesService } from '../api/timeEntriesService'
 import { clientsService } from '../api/clientsService'
 import { TimeEntry } from '../api/types'
+// MUI imports
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  Stack,
+  Alert,
+} from '@mui/material'
+import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, FilterAlt as FilterIcon } from '@mui/icons-material'
 
 export function TimeEntryList() {
   // Use a mock user ID for now
   const [userId] = useState('user123')
   const queryClient = useQueryClient()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [entryToDelete, setEntryToDelete] = useState<number | null>(null)
 
   // Set up date range for filtering (default to current month)
   const today = new Date()
@@ -45,13 +71,24 @@ export function TimeEntryList() {
     onSuccess: () => {
       // Invalidate the time entries query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] })
+      setDeleteDialogOpen(false)
     },
   })
 
-  const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this time entry?')) {
-      deleteMutation.mutate(id)
+  const handleDeleteClick = (id: number) => {
+    setEntryToDelete(id)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (entryToDelete !== null) {
+      deleteMutation.mutate(entryToDelete)
     }
+  }
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false)
+    setEntryToDelete(null)
   }
 
   // Helper function to find project name by ID
@@ -82,95 +119,133 @@ export function TimeEntryList() {
   }
 
   if (isLoading || isLoadingClients) {
-    return <div className="loading">Loading time entries...</div>
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    )
   }
 
   if (isError) {
-    return <div className="error">Error: {(error as Error).message}</div>
+    return (
+      <Alert severity="error" sx={{ mt: 2 }}>
+        Error: {(error as Error).message}
+      </Alert>
+    )
   }
 
   const timeEntries = data?.timeEntries || []
 
   return (
-    <div className="time-entries-container">
-      <div className="time-entries-header">
-        <h2>Time Entries</h2>
-        <Link to="/time-entries/new" className="button create-button">
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h5" component="h2">
+          Time Entries
+        </Typography>
+        <Button component={Link} to="/time-entries/new" variant="contained" color="primary" startIcon={<AddIcon />}>
           Add New Entry
-        </Link>
-      </div>
+        </Button>
+      </Box>
 
-      <form className="filter-form" onSubmit={handleFilterChange}>
-        <div className="filter-controls">
-          <div className="form-group">
-            <label htmlFor="startDate">Start Date</label>
-            <input type="date" id="startDate" name="startDate" defaultValue={startDate} max={endDate} />
-          </div>
-          <div className="form-group">
-            <label htmlFor="endDate">End Date</label>
-            <input type="date" id="endDate" name="endDate" defaultValue={endDate} min={startDate} />
-          </div>
-          <button type="submit" className="button filter-button">
+      <Paper component="form" onSubmit={handleFilterChange} sx={{ p: 2, mb: 3 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="flex-end">
+          <TextField
+            id="startDate"
+            name="startDate"
+            label="Start Date"
+            type="date"
+            defaultValue={startDate}
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ max: endDate }}
+            fullWidth
+          />
+          <TextField
+            id="endDate"
+            name="endDate"
+            label="End Date"
+            type="date"
+            defaultValue={endDate}
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ min: startDate }}
+            fullWidth
+          />
+          <Button type="submit" variant="outlined" startIcon={<FilterIcon />}>
             Apply Filter
-          </button>
-        </div>
-      </form>
+          </Button>
+        </Stack>
+      </Paper>
 
       {timeEntries.length === 0 ? (
-        <div className="no-entries">
-          <p>No time entries found for the selected period.</p>
-        </div>
+        <Paper sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="body1">No time entries found for the selected period.</Typography>
+        </Paper>
       ) : (
-        <table className="time-entries-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Project</th>
-              <th>Hours</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {timeEntries.map((entry: TimeEntry) => {
-              const projectDetails = getProjectDetails(entry.projectId)
-              return (
-                <tr key={entry.id}>
-                  <td>{format(new Date(entry.date), 'MMM dd, yyyy')}</td>
-                  <td>
-                    {projectDetails ? (
-                      <div>
-                        <div className="client-name" style={{ fontWeight: 'bold' }}>
-                          {projectDetails.clientName}
-                        </div>
-                        <div className="project-name">{projectDetails.projectName}</div>
-                      </div>
-                    ) : (
-                      entry.projectId
-                    )}
-                  </td>
-                  <td>{entry.hours}</td>
-                  <td className="actions-cell">
-                    <Link
-                      to={`/time-entries/$timeEntryId`}
-                      params={{ timeEntryId: entry.id.toString() }}
-                      className="button edit-button"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      className="button delete-button"
-                      onClick={() => handleDelete(entry.id)}
-                      disabled={deleteMutation.isPending}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+        <TableContainer component={Paper}>
+          <Table aria-label="time entries table">
+            <TableHead>
+              <TableRow>
+                <TableCell>Date</TableCell>
+                <TableCell>Project</TableCell>
+                <TableCell>Hours</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {timeEntries.map((entry: TimeEntry) => {
+                const projectDetails = getProjectDetails(entry.projectId)
+                return (
+                  <TableRow key={entry.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                    <TableCell>{format(new Date(entry.date), 'MMM dd, yyyy')}</TableCell>
+                    <TableCell>
+                      {projectDetails ? (
+                        <>
+                          <Typography variant="subtitle2">{projectDetails.clientName}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {projectDetails.projectName}
+                          </Typography>
+                        </>
+                      ) : (
+                        entry.projectId
+                      )}
+                    </TableCell>
+                    <TableCell>{entry.hours}</TableCell>
+                    <TableCell align="right">
+                      <Button href={`/time-entries/${entry.id}`} size="small" startIcon={<EditIcon />} sx={{ mr: 1 }}>
+                        Edit
+                      </Button>
+                      <Button
+                        size="small"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => handleDeleteClick(entry.id)}
+                        disabled={deleteMutation.isPending}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
-    </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={handleCancelDelete}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this time entry? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   )
 }
