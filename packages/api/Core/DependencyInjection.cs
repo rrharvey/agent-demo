@@ -26,42 +26,53 @@ public static class DependencyInjection
   /// <returns>The service collection for chaining</returns>
   public static IServiceCollection AddCqrs(this IServiceCollection services, Assembly assembly)
   {
-    // Register Command Handlers
-    var commandHandlerTypes = assembly
-      .GetTypes()
-      .Where(t =>
-        !t.IsAbstract
-        && !t.IsInterface
-        && t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>))
-      );
+    // Register command handlers with results: ICommandHandler<,>
+    RegisterHandlersForInterface(services, assembly, typeof(ICommandHandler<,>));
 
-    foreach (var handlerType in commandHandlerTypes)
-    {
-      var interfaceType = handlerType
-        .GetInterfaces()
-        .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>));
+    // Register command handlers without results: ICommandHandler<>
+    RegisterHandlersForInterface(services, assembly, typeof(ICommandHandler<>), typeof(ICommandHandler<,>));
 
-      services.AddScoped(interfaceType, handlerType);
-    }
-
-    // Register Query Handlers
-    var queryHandlerTypes = assembly
-      .GetTypes()
-      .Where(t =>
-        !t.IsAbstract
-        && !t.IsInterface
-        && t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>))
-      );
-
-    foreach (var handlerType in queryHandlerTypes)
-    {
-      var interfaceType = handlerType
-        .GetInterfaces()
-        .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>));
-
-      services.AddScoped(interfaceType, handlerType);
-    }
+    // Register query handlers: IQueryHandler<,>
+    RegisterHandlersForInterface(services, assembly, typeof(IQueryHandler<,>));
 
     return services;
+  }
+
+  /// <summary>
+  /// Helper method to register handlers for a specific interface type
+  /// </summary>
+  private static void RegisterHandlersForInterface(
+    IServiceCollection services,
+    Assembly assembly,
+    Type handlerInterfaceType,
+    Type? excludeGeneric = null
+  )
+  {
+    // Only load types that actually implement the target interface
+    var handlerTypes = assembly
+      .GetTypes()
+      .Where(t =>
+        !t.IsAbstract
+        && !t.IsInterface
+        && t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == handlerInterfaceType)
+      );
+
+    // Further filter if we need to exclude certain interface implementations
+    if (excludeGeneric != null)
+    {
+      handlerTypes = handlerTypes.Where(t =>
+        !t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == excludeGeneric)
+      );
+    }
+
+    // Register all matching handlers
+    foreach (var handlerType in handlerTypes)
+    {
+      var interfaceType = handlerType
+        .GetInterfaces()
+        .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == handlerInterfaceType);
+
+      services.AddScoped(interfaceType, handlerType);
+    }
   }
 }
