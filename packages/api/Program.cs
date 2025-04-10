@@ -1,5 +1,6 @@
 using Api;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +16,6 @@ builder.Services.AddDbContext<Api.Data.ApplicationDbContext>(options =>
 
 // Add OpenAPI documentation
 builder.Services.AddOpenApi();
-builder.Services.AddEndpointsApiExplorer();
 
 // Register CQRS handlers
 builder.Services.AddCqrs();
@@ -37,10 +37,7 @@ app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader())
 if (app.Environment.IsDevelopment())
 {
   app.MapOpenApi();
-  app.UseSwaggerUI(options =>
-  {
-    options.SwaggerEndpoint("/openapi/v1.json", "Time Tracker API v1");
-  });
+  app.MapScalarApiReference();
 }
 
 app.MapEndpoints();
