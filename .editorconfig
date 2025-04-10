@@ -3,14 +3,17 @@
 # top-most EditorConfig file
 root = true
 
-# Unix-style newlines with a newline ending every file
 [*]
-end_of_line = lf
-insert_final_newline = true
 charset = utf-8
-indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+end_of_line = lf
 indent_size = 2
-trim_trailing_whitespace = false
+indent_style = space
+max_line_length = 120
 
 # Markdown files may use trailing whitespace for line breaks
 [*.md]
@@ -18,6 +21,7 @@ trim_trailing_whitespace = false
 
 [*.cs]
 dotnet_diagnostic.IDE0005.severity = error
+dotnet_diagnostic.IDE0028.severity = error
 dotnet_analyzer_diagnostic.category-Design.severity = warning
 dotnet_analyzer_diagnostic.category-Maintainability.severity = warning
 dotnet_analyzer_diagnostic.category-Performance.severity = warning
