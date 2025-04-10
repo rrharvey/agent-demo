@@ -2,11 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { useState } from 'react'
-import { timeEntriesService } from '../api/timeEntriesService'
-import { clientsService } from '../api/clientsService'
 import { TimeEntry } from '../api/types'
 // MUI imports
+import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, FilterAlt as FilterIcon } from '@mui/icons-material'
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -17,6 +17,7 @@ import {
   DialogContentText,
   DialogTitle,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -25,14 +26,11 @@ import {
   TableRow,
   TextField,
   Typography,
-  Stack,
-  Alert,
 } from '@mui/material'
-import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, FilterAlt as FilterIcon } from '@mui/icons-material'
+import { getAllClientsQuery } from '../api/clientsService'
+import { getTimeEntriesForUserQuery, timeEntriesService, timeEntryKeys } from '../api/timeEntriesService'
 
 export function TimeEntryList() {
-  // Use a mock user ID for now
-  const [userId] = useState('user123')
   const queryClient = useQueryClient()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [entryToDelete, setEntryToDelete] = useState<number | null>(null)
@@ -45,32 +43,24 @@ export function TimeEntryList() {
   const [startDate, setStartDate] = useState(format(firstDayOfMonth, 'yyyy-MM-dd'))
   const [endDate, setEndDate] = useState(format(lastDayOfMonth, 'yyyy-MM-dd'))
 
-  // Fetch time entries
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['timeEntries', userId, startDate, endDate],
-    queryFn: () =>
-      timeEntriesService.getTimeEntries({
-        userId,
-        startDate,
-        endDate,
-      }),
-  })
+  // Use the query options pattern for fetching time entries
+  const {
+    data: timeEntries,
+    isLoading: isLoadingTimeEntries,
+    isError: isErrorTimeEntries,
+    error: timeEntriesError,
+  } = useQuery(getTimeEntriesForUserQuery('user123'))
 
-  // Fetch clients and their projects for lookup
-  const { data: clientsData, isLoading: isLoadingClients } = useQuery({
-    queryKey: ['clients'],
-    queryFn: async () => {
-      const result = await clientsService.getAllClients()
-      return result.clients
-    },
-  })
+  // Use the query options pattern for fetching clients
+  const { data: clients, isLoading: isLoadingClients } = useQuery(getAllClientsQuery())
 
   // Set up mutation for deleting entries
   const deleteMutation = useMutation({
     mutationFn: (timeEntryId: number) => timeEntriesService.deleteTimeEntry(timeEntryId),
-    onSuccess: () => {
+    onSuccess: (_, timeEntryId) => {
       // Invalidate the time entries query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['timeEntries'] })
+      queryClient.removeQueries({ queryKey: timeEntryKeys.single(timeEntryId) })
+      queryClient.invalidateQueries({ queryKey: timeEntryKeys.all() })
       setDeleteDialogOpen(false)
     },
   })
@@ -93,9 +83,9 @@ export function TimeEntryList() {
 
   // Helper function to find project name by ID
   const getProjectDetails = (projectId: string): { projectName: string; clientName: string } | null => {
-    if (!clientsData) return null
+    if (!clients) return null
 
-    for (const client of clientsData) {
+    for (const client of clients.clients) {
       const project = client.projects.find((p) => p.id === projectId)
       if (project) {
         return {
@@ -118,7 +108,7 @@ export function TimeEntryList() {
     setEndDate(newEndDate)
   }
 
-  if (isLoading || isLoadingClients) {
+  if (isLoadingTimeEntries || isLoadingClients) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
@@ -126,15 +116,15 @@ export function TimeEntryList() {
     )
   }
 
-  if (isError) {
+  if (isErrorTimeEntries) {
     return (
       <Alert severity="error" sx={{ mt: 2 }}>
-        Error: {(error as Error).message}
+        Error: {(timeEntriesError as Error).message}
       </Alert>
     )
   }
 
-  const timeEntries = data?.timeEntries || []
+  const timeEntriesList = timeEntries?.timeEntries || []
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -179,7 +169,7 @@ export function TimeEntryList() {
         </Stack>
       </Paper>
 
-      {timeEntries.length === 0 ? (
+      {timeEntriesList.length === 0 ? (
         <Paper sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="body1">No time entries found for the selected period.</Typography>
         </Paper>
@@ -195,7 +185,7 @@ export function TimeEntryList() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {timeEntries.map((entry: TimeEntry) => {
+              {timeEntriesList.map((entry: TimeEntry) => {
                 const projectDetails = getProjectDetails(entry.projectId)
                 return (
                   <TableRow key={entry.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>

@@ -1,12 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
-import { format } from 'date-fns'
-import { useState, useEffect } from 'react'
-import { timeEntriesService } from '../api/timeEntriesService'
-import { clientsService } from '../api/clientsService'
-import { TimeEntryCreateDto, TimeEntryUpdateDto, Project } from '../api/types'
-// MUI imports
+import { Cancel as CancelIcon, Save as SaveIcon } from '@mui/icons-material'
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -18,13 +12,18 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  SelectChangeEvent,
   Stack,
   TextField,
   Typography,
-  Alert,
-  SelectChangeEvent,
 } from '@mui/material'
-import { Save as SaveIcon, Cancel as CancelIcon } from '@mui/icons-material'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
+import { format } from 'date-fns'
+import { useEffect, useState } from 'react'
+import { getAllClientsQuery } from '../api/clientsService'
+import { getTimeEntryByIdQuery, timeEntriesService, timeEntryKeys } from '../api/timeEntriesService'
+import { Project, TimeEntryCreateDto, TimeEntryUpdateDto } from '../api/types'
 
 interface TimeEntryFormProps {
   mode: 'create' | 'edit'
@@ -61,61 +60,45 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
     return rounded
   }
 
-  // Fetch clients and their projects
+  // Fetch clients and their projects using the options pattern
   const {
     data: clientsData,
     isLoading: isLoadingClients,
     isError: isErrorFetchingClients,
     error: clientsFetchError,
-  } = useQuery({
-    queryKey: ['clients'],
-    queryFn: async () => {
-      const result = await clientsService.getAllClients()
-      return result.clients
-    },
-  })
+  } = useQuery(getAllClientsQuery())
 
-  // Fetch time entry data if in edit mode
+  // Fetch time entry data if in edit mode using the options pattern
   const {
     data: timeEntryData,
     isLoading: isLoadingTimeEntry,
     isError: isErrorFetchingTimeEntry,
     error: timeEntryFetchError,
   } = useQuery({
-    queryKey: ['timeEntry', timeEntryId],
-    queryFn: async () => {
-      if (mode === 'edit' && timeEntryId) {
-        const timeEntry = await timeEntriesService.getTimeEntryById(timeEntryId)
-        if (!timeEntry) {
-          throw new Error('Time entry not found')
-        }
-        return timeEntry
-      }
-      return null
-    },
+    ...getTimeEntryByIdQuery(timeEntryId || 0),
     enabled: mode === 'edit' && !!timeEntryId,
   })
 
   // Get projects for selected client
   const getProjectsForClient = (clientId: string): Project[] => {
     if (!clientsData) return []
-    const client = clientsData.find((c) => c.id === clientId)
+    const client = clientsData.clients.find((c) => c.id === clientId)
     return client ? client.projects : []
   }
 
   // Update form values when time entry data is loaded
   useEffect(() => {
-    if (timeEntryData) {
+    if (timeEntryData?.timeEntry) {
       setFormValues({
-        projectId: timeEntryData.projectId,
-        date: timeEntryData.date,
-        hours: timeEntryData.hours,
+        projectId: timeEntryData.timeEntry.projectId,
+        date: timeEntryData.timeEntry.date,
+        hours: timeEntryData.timeEntry.hours,
       })
 
       // If we have clients data, set the selected client based on the project ID
       if (clientsData) {
-        for (const client of clientsData) {
-          const project = client.projects.find((p) => p.id === timeEntryData.projectId)
+        for (const client of clientsData.clients) {
+          const project = client.projects.find((p) => p.id === timeEntryData?.timeEntry?.projectId)
           if (project) {
             setSelectedClientId(client.id)
             break
@@ -137,7 +120,8 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: (data: TimeEntryUpdateDto) => timeEntriesService.updateTimeEntry(data),
-    onSuccess: () => {
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: timeEntryKeys.single(id) })
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] })
       navigate({ to: '/time-entries' })
     },
@@ -238,7 +222,7 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
         const updateData: TimeEntryUpdateDto = {
           id: timeEntryId,
           ...submissionValues,
-          userId: timeEntryData.userId,
+          userId,
         }
         updateMutation.mutate(updateData)
       }
@@ -300,7 +284,7 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                   <MenuItem value="">
                     <em>Select a client</em>
                   </MenuItem>
-                  {clientsData?.map((client) => (
+                  {clientsData?.clients.map((client) => (
                     <MenuItem key={client.id} value={client.id}>
                       {client.name}
                     </MenuItem>

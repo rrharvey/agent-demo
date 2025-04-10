@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 // Base API client instance
 export const apiClient = ky.create({
-  prefixUrl: 'http://localhost:5008',
+  prefixUrl: 'http://localhost:5008/',
   headers: {
     'Content-Type': 'application/json',
   },

@@ -1,69 +1,64 @@
-import { apiClient, handleApiResponse } from './client'
+import { queryOptions } from '@tanstack/react-query'
+import { apiClient } from './client'
 import {
+  GetTimeEntriesParams,
+  GetTimeEntryByIdResult,
   TimeEntry,
   TimeEntryCreateDto,
   TimeEntryUpdateDto,
-  GetTimeEntriesParams,
-  GetTimeEntriesResult,
-  GetTimeEntryByIdResult,
 } from './types'
 
-// Time entries API service
+// Query option creators for time entries
+export const timeEntryKeys = {
+  single: (id: number) => ['timeEntry', id] as const,
+  forUser: ({ userId }: GetTimeEntriesParams) => ['timeEntries', userId] as const,
+  all: () => ['timeEntries'] as const,
+}
+
+// Service functions for time entries
 export const timeEntriesService = {
-  // Get time entries for a user with optional filtering
-  async getTimeEntries(params: GetTimeEntriesParams): Promise<GetTimeEntriesResult> {
-    // Validate input parameters
-    const validatedParams = GetTimeEntriesParams.parse(params)
-
-    const searchParams = new URLSearchParams()
-    searchParams.append('userId', validatedParams.userId)
-
-    if (validatedParams.projectId) {
-      searchParams.append('projectId', validatedParams.projectId)
-    }
-
-    if (validatedParams.startDate) {
-      searchParams.append('startDate', validatedParams.startDate)
-    }
-
-    if (validatedParams.endDate) {
-      searchParams.append('endDate', validatedParams.endDate)
-    }
-
-    return handleApiResponse<GetTimeEntriesResult>(
-      apiClient.get('time-entries', { searchParams }),
-      GetTimeEntriesResult,
-    )
+  // Get all time entries for a user
+  async getTimeEntriesForUser(userId: string): Promise<{ timeEntries: TimeEntry[] }> {
+    return apiClient(`time-entries?userId=${userId}`, { method: 'GET' }).json()
   },
 
   // Get a specific time entry by ID
-  async getTimeEntryById(id: number): Promise<TimeEntry | null> {
-    return handleApiResponse<GetTimeEntryByIdResult>(apiClient.get(`time-entries/${id}`), GetTimeEntryByIdResult).then(
-      (result) => result.timeEntry,
-    )
+  async getTimeEntryById(id: number): Promise<GetTimeEntryByIdResult> {
+    return apiClient(`time-entries/${id}`, { method: 'GET' }).json()
   },
 
   // Create a new time entry
-  async createTimeEntry(entry: TimeEntryCreateDto): Promise<TimeEntry> {
-    // Validate input data
-    const validatedEntry = TimeEntryCreateDto.parse(entry)
-
-    return handleApiResponse<TimeEntry>(apiClient.post('time-entries', { json: validatedEntry }), TimeEntry)
+  async createTimeEntry(data: TimeEntryCreateDto): Promise<TimeEntry> {
+    return apiClient('time-entries', {
+      method: 'POST',
+      json: data,
+    }).json()
   },
 
   // Update an existing time entry
-  async updateTimeEntry(entry: TimeEntryUpdateDto): Promise<TimeEntry> {
-    // Validate input data
-    const validatedEntry = TimeEntryUpdateDto.parse(entry)
-
-    return handleApiResponse<TimeEntry>(
-      apiClient.put(`time-entries/${validatedEntry.id}`, { json: validatedEntry }),
-      TimeEntry,
-    )
+  async updateTimeEntry(data: TimeEntryUpdateDto): Promise<TimeEntry> {
+    return apiClient(`time-entries/${data.id}`, {
+      method: 'PUT',
+      json: data,
+    }).json()
   },
 
   // Delete a time entry
   async deleteTimeEntry(id: number): Promise<void> {
-    await apiClient.delete(`time-entries/${id}`)
+    return apiClient(`time-entries/${id}`, { method: 'DELETE' }).json()
   },
 }
+
+// Query functions that can be exported and reused
+export const getTimeEntryByIdQuery = (id: number) =>
+  queryOptions({
+    queryKey: timeEntryKeys.single(id),
+    queryFn: () => timeEntriesService.getTimeEntryById(id),
+    enabled: !!id,
+  })
+
+export const getTimeEntriesForUserQuery = (userId: string) =>
+  queryOptions({
+    queryKey: timeEntryKeys.forUser({ userId }),
+    queryFn: () => timeEntriesService.getTimeEntriesForUser(userId),
+  })
