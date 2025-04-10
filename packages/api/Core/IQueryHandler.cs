@@ -1,4 +1,4 @@
-namespace Api.CQRS;
+namespace Api;
 
 /// <summary>
 /// Interface for query handlers in CQRS pattern.

@@ -1,12 +1,12 @@
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+using Api;
 
-namespace Api.CQRS;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension methods for CQRS service registration
 /// </summary>
-public static class ServiceCollectionExtensions
+public static class DependencyInjection
 {
   /// <summary>
   /// Registers all command and query handlers in the assembly containing the specified marker type.

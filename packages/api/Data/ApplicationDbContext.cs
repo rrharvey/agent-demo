@@ -3,11 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
-  public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : base(options) { }
-
   public DbSet<Client> Clients { get; set; } = null!;
   public DbSet<Project> Projects { get; set; } = null!;
   public DbSet<TimeEntry> TimeEntries { get; set; } = null!;

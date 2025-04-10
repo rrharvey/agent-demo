@@ -1,4 +1,4 @@
-namespace Api.CQRS;
+namespace Api;
 
 /// <summary>
 /// Marker interface for commands in CQRS pattern.
