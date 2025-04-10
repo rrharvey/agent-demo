@@ -1,35 +1,64 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Outlet, RouterProvider, createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import { TanStackRouterDevtools } from '@tanstack/router-devtools'
+import { TimeEntryList } from './components/TimeEntryList'
+import { TimeEntryForm } from './components/TimeEntryForm'
 
-function App() {
-  const [count, setCount] = useState(0)
+// Root route with layout
+const rootRoute = createRootRoute({
+  component: () => (
+    <div className="app-container">
+      <main className="app-content">
+        <Outlet />
+      </main>
+      {import.meta.env.DEV && <TanStackRouterDevtools />}
+    </div>
+  ),
+})
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+// Use TimeEntryList as the index/home route
+const indexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  component: TimeEntryList,
+})
+
+// Time entries list route
+const timeEntriesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/time-entries',
+  component: TimeEntryList,
+})
+
+// Create time entry route
+const createTimeEntryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/time-entries/new',
+  component: () => <TimeEntryForm mode="create" />,
+})
+
+// Edit time entry route
+const editTimeEntryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/time-entries/$timeEntryId',
+  component: function EditTimeEntry() {
+    const { timeEntryId } = editTimeEntryRoute.useParams()
+    return <TimeEntryForm mode="edit" timeEntryId={parseInt(timeEntryId)} />
+  },
+})
+
+// Register routes
+const routeTree = rootRoute.addChildren([indexRoute, timeEntriesRoute, createTimeEntryRoute, editTimeEntryRoute])
+
+// Create router instance
+const router = createRouter({ routeTree })
+
+// Export type for router
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router
+  }
 }
 
-export default App
+export default function App() {
+  return <RouterProvider router={router} />
+}
