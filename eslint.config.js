@@ -15,7 +15,6 @@ export default tseslint.config(
   js.configs.recommended,
   // TypeScript configurations
   ...tseslint.configs.recommended,
-
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -28,10 +27,7 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
   // Prettier configuration (disables rules that conflict with Prettier)
