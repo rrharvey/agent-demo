@@ -125,26 +125,6 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
     }
   }, [timeEntryData, clientsData])
 
-  // Auto-select project when client is changed
-  useEffect(() => {
-    if (selectedClientId) {
-      const projects = getProjectsForClient(selectedClientId)
-      // If there's only one project for this client, auto-select it
-      if (projects.length === 1) {
-        setFormValues((prev) => ({
-          ...prev,
-          projectId: projects[0].id,
-        }))
-      } else if (projects.length > 1 && !projects.some((p) => p.id === formValues.projectId)) {
-        // Reset project selection if current project doesn't belong to the selected client
-        setFormValues((prev) => ({
-          ...prev,
-          projectId: '',
-        }))
-      }
-    }
-  }, [selectedClientId, clientsData])
-
   // Create mutation
   const createMutation = useMutation({
     mutationFn: (data: TimeEntryCreateDto) => timeEntriesService.createTimeEntry(data),
@@ -166,6 +146,20 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
   // Handle client selection change
   const handleClientChange = (event: SelectChangeEvent<string>) => {
     setSelectedClientId(event.target.value)
+    const projects = getProjectsForClient(event.target.value)
+    // If there's only one project for this client, auto-select it
+    if (projects.length === 1) {
+      setFormValues((prev) => ({
+        ...prev,
+        projectId: projects[0].id,
+      }))
+    } else if (projects.length > 1 && !projects.some((p) => p.id === formValues.projectId)) {
+      // Reset project selection if current project doesn't belong to the selected client
+      setFormValues((prev) => ({
+        ...prev,
+        projectId: '',
+      }))
+    }
   }
 
   // Handle project selection change
