@@ -22,6 +22,7 @@ trim_trailing_whitespace = false
 [*.cs]
 dotnet_diagnostic.IDE0005.severity = error
 dotnet_diagnostic.IDE0028.severity = error
+dotnet_diagnostic.IDE0290.severity = error
 dotnet_analyzer_diagnostic.category-Design.severity = warning
 dotnet_analyzer_diagnostic.category-Maintainability.severity = warning
 dotnet_analyzer_diagnostic.category-Performance.severity = warning
