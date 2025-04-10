@@ -1,3 +1,4 @@
+using Api.CQRS;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,9 @@ builder.Services.AddCors();
 builder.Services.AddDbContext<Api.Data.ApplicationDbContext>(options =>
   options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=timetracker.db")
 );
+
+// Register CQRS handlers
+builder.Services.AddCqrs();
 
 // Build app
 var app = builder.Build();
