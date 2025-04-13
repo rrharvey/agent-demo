@@ -25,6 +25,7 @@ internal static class DemoData
       new() { Id = Guid.NewGuid(), Name = "CoreLogic Systems" },
       new() { Id = Guid.NewGuid(), Name = "MobileFirst Enterprises" },
       new() { Id = Guid.NewGuid(), Name = "SmartFlow Solutions" },
+      new() { Id = Guid.NewGuid(), Name = "Intertech" },
     };
 
     context.Set<Client>().AddRange(clients);
@@ -108,6 +109,30 @@ internal static class DemoData
         Id = Guid.NewGuid(),
         Name = "Blockchain Supply Chain Tracking",
         ClientId = clients[9].Id,
+      },
+      new()
+      {
+        Id = Guid.NewGuid(),
+        Name = "Paid Time Off",
+        ClientId = clients[10].Id,
+      },
+      new()
+      {
+        Id = Guid.NewGuid(),
+        Name = "Bench",
+        ClientId = clients[10].Id,
+      },
+      new()
+      {
+        Id = Guid.NewGuid(),
+        Name = "Holiday",
+        ClientId = clients[10].Id,
+      },
+      new()
+      {
+        Id = Guid.NewGuid(),
+        Name = "Administrative",
+        ClientId = clients[10].Id,
       },
     };
 
