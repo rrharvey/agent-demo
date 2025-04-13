@@ -8,13 +8,12 @@
       "projectPath": "${workspaceFolder}/packages/api/api.csproj"
     },
     {
-      "name": "Run agent.ts",
-      "type": "node",
+      "name": "Agent Debug",
+      "type": "debugpy",
       "request": "launch",
-      "skipFiles": ["<node_internals>/**"],
-      "runtimeExecutable": "tsx",
-      "runtimeArgs": ["${workspaceFolder}/src/agent.ts"],
-      "console": "integratedTerminal"
+      "module": "packages.agent.src.main",
+      "justMyCode": true,
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
