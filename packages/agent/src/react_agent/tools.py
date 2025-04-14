@@ -1,9 +1,5 @@
-"""This module provides example tools for web scraping and search functionality.
+"""This module includes time entry tools for the agent.
 
-It includes a basic Tavily search function (as an example)
-
-These tools are intended as free examples to get started. For production use,
-consider implementing more robust and specialized tools tailored to your needs.
 """
 
 from typing import Any, Callable, List, Optional, cast
@@ -16,20 +12,6 @@ from .api_client import ApiClient
 from .api_models import CreateTimeEntryCommand, GetAllProjectsResponse, TimeEntry
 from react_agent.configuration import Configuration
 
-
-# async def search(
-#     query: str, *, config: Annotated[RunnableConfig, InjectedToolArg]
-# ) -> Optional[list[dict[str, Any]]]:
-#     """Search for general web results.
-
-#     This function performs a search using the Tavily search engine, which is designed
-#     to provide comprehensive, accurate, and trusted results. It's particularly useful
-#     for answering questions about current events.
-#     """
-#     configuration = Configuration.from_runnable_config(config)
-#     wrapped = TavilySearchResults(max_results=configuration.max_search_results)
-#     result = await wrapped.ainvoke({"query": query})
-#     return cast(list[dict[str, Any]], result)
 
 def get_projects(*, config: Annotated[RunnableConfig, InjectedToolArg]) -> GetAllProjectsResponse:
     """Get all projects with their client information
