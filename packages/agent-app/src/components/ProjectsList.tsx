@@ -1,7 +1,8 @@
-import { Project, parseProjectsData } from '../models'
+import { Project, ProjectsList } from '../models'
 
-export const ProjectsList = ({ content }: { content: string }) => {
-  const projects = parseProjectsData(JSON.parse(content)).projects
+export const ProjectsListCard = ({ content }: { content: string }) => {
+  const projects = ProjectsList.parse(JSON.parse(content)).projects
+
   return (
     <div className="projects-container" style={{ fontSize: '0.9rem' }}>
       <h3 style={{ marginBottom: '0.8rem', fontSize: '1.1rem' }}>Projects</h3>

@@ -1,7 +1,7 @@
 import type { Message } from '@langchain/langgraph-sdk'
-import { ContentRenderer } from './ContentRenderer'
-import { ProjectsList } from './ProjectsList'
 import { MessageContent } from '../models'
+import { ContentRenderer } from './ContentRenderer'
+import { ProjectsListCard } from './ProjectsList'
 
 export const MessageCard = ({ message }: { message: Message }) => {
   return (
@@ -9,8 +9,8 @@ export const MessageCard = ({ message }: { message: Message }) => {
       <div className="message-header">{message.type === 'human' ? 'You' : 'Assistant'}</div>
       <div className="message-content">
         {message.type === 'tool' && message.name === 'get_projects' ? (
-          <ProjectsList content={message.content as string} />
-        ) : (
+          <ProjectsListCard content={message.content as string} />
+        ) : message.type === 'tool' && message.name === 'book_time_entry' ? null : (
           <ContentRenderer content={message.content as MessageContent} />
         )}
       </div>
