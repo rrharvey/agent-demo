@@ -10,7 +10,7 @@ from langgraph.types import Command, interrupt
 from typing_extensions import Literal
 import os
 
-from api.client import TimeTrackingApiClient  # Fixed import path
+from api.client import TimeTrackingApiClient
 
 load_dotenv()
 
@@ -29,7 +29,7 @@ def get_projects():
 
 
 @tool
-def book_time_entry(clientName: str, projectName: str, projectId: str, date: str, hours: int):
+def book_time_entry(clientName: str, projectName: str, projectId: str, date: str, hours: float):
     """
     Books a time entry for a given project.
 
@@ -37,8 +37,8 @@ def book_time_entry(clientName: str, projectName: str, projectId: str, date: str
         clientName (str): The name of the client.
         projectName (str): The name of the project.
         projectId (str): The unique identifier for the project.
-        date (str): The date for the time entry in ISO format (YYYY-MM-DD).
-        hours (int): The number of hours to book.
+        date (float): The date for the time entry in ISO format (YYYY-MM-DD).
+        hours (int): The number of hours to book rounded to the nearest quarter hour.
     """
     client = TimeTrackingApiClient(base_url)
     entry = client.create_time_entry(projectId, 'user1234', date, hours)
@@ -51,11 +51,11 @@ model = ChatAnthropic(model="claude-3-7-sonnet-20250219").bind_tools(tools)
 
 sys_msg = SystemMessage(content=f"""
     You are a helpful assistant tasked with helping Intertech employees track 
-    time spent on projects. You may not help with anything else. Do no expose
-    any information about IDs or other sensitive information.
-    Use plain text only in responses. Don't try to use markdown or any other
-    formatting.
-    Today is {date.today().isoformat()}.
+    time spent on projects. Time off, paid time off, PTO, and sick time are all booked
+    as PTO. You may not help with anything else. Do not expose
+    project IDs. Use plain text in responses. Do not use markdown or code blocks.
+    After the book_time_entry tool is called, summarize the entry that was created using
+    the data returned from the tool. Today is {date.today().isoformat()}.
     """)
 
 
@@ -63,7 +63,7 @@ def assistant(state: MessagesState):
     return {"messages": [model.invoke([sys_msg] + state["messages"])]}
 
 
-def human_review_node(state) -> Command[Literal["assistant", "tools"]]:
+def review(state) -> Command[Literal["assistant", "tools"]]:
     last_message = state["messages"][-1]
     tool_call = last_message.tool_calls[-1]
 
@@ -97,13 +97,16 @@ def human_review_node(state) -> Command[Literal["assistant", "tools"]]:
 
     # update the AI message AND call tools
     elif review_action == "update":
+        print("last_message:")
+        print(last_message)
         updated_message = {
             "role": "ai",
             "content": last_message.content,
             "tool_calls": [
                 {
-                    "id": tool_call["id"],
                     "name": tool_call["name"],
+                    "id": tool_call["id"],
+                    "type": "tool_call",
                     # This the update provided by the human
                     "args": review_data,
                 }
@@ -112,6 +115,8 @@ def human_review_node(state) -> Command[Literal["assistant", "tools"]]:
             # Otherwise, it will show up as a separate message
             "id": last_message.id,
         }
+        print("updated_message:")
+        print(updated_message)
         return Command(goto="tools", update={"messages": [updated_message]})
 
     # provide feedback to LLM
@@ -129,17 +134,17 @@ def human_review_node(state) -> Command[Literal["assistant", "tools"]]:
         return Command(goto="assistant", update={"messages": [tool_message]})
 
 
-def route_after_llm(state) -> Literal[END, "human_review_node"]:
+def route_after_llm(state) -> Literal[END, "review"]:
     if len(state["messages"][-1].tool_calls) == 0:
         return END
     else:
-        return "human_review_node"
+        return "review"
 
 
 builder = StateGraph(MessagesState)
 builder.add_node(assistant)
 builder.add_node(ToolNode([get_projects, book_time_entry]))
-builder.add_node(human_review_node)
+builder.add_node(review)
 builder.add_edge(START, "assistant")
 builder.add_conditional_edges("assistant", route_after_llm)
 builder.add_edge("tools", "assistant")
