@@ -2,22 +2,8 @@
 
 import type { Message } from '@langchain/langgraph-sdk'
 import { useStream } from '@langchain/langgraph-sdk/react'
-import { ReactNode, useEffect, useRef } from 'react'
-import { parseProjectsData } from './models/projectSchema'
-
-type MessageContentText = {
-  type: 'text'
-  text: string
-}
-
-type MesageContentToolUse = {
-  type: 'tool_use'
-  name: string
-  id: string
-  input: Record<string, unknown>
-}
-
-type MessageContent = string | MessageContentText | MesageContentToolUse
+import { useEffect, useRef } from 'react'
+import { MessageCard } from './components/MessageCard'
 
 export default function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -39,8 +25,6 @@ export default function App() {
     }
   }, [thread.isLoading, thread.messages.length])
 
-  // Filter only human and AI messages
-  // const chatMessages = thread.messages.filter((msg) => msg.type === 'human' || msg.type === 'ai')
   const chatMessages = thread.messages
 
   return (
@@ -49,7 +33,9 @@ export default function App() {
         {chatMessages.map((message) => (
           <div key={message.id} className={`message ${message.type === 'human' ? 'user-message' : 'ai-message'}`}>
             <div className="message-header">{message.type === 'human' ? 'You' : 'Assistant'}</div>
-            <div className="message-content">{renderMessage(message)}</div>
+            <div className="message-content">
+              <MessageCard message={message} />
+            </div>
           </div>
         ))}
         {thread.isLoading && (
@@ -102,53 +88,4 @@ export default function App() {
       </form>
     </div>
   )
-}
-
-function renderMessage(message: Message): ReactNode {
-  if (message.type === 'tool' && message.name === 'get_projects') {
-    const projects = parseProjectsData(JSON.parse(message.content as unknown as string)).projects
-    return (
-      <div className="projects-container">
-        <h3>Projects</h3>
-        {Object.entries(
-          projects.reduce((acc, project) => {
-            // Group projects by client
-            const client = project.clientName || 'No Client'
-            if (!acc[client]) acc[client] = []
-            acc[client].push(project)
-            return acc
-          }, {} as Record<string, typeof projects>)
-        )
-          // Sort by client name
-          .sort(([clientA], [clientB]) => clientA.localeCompare(clientB))
-          .map(([client, clientProjects]) => (
-            <div key={client} className="client-group">
-              <h4>{client}</h4>
-              <ul>
-                {/* Sort projects by project name */}
-                {clientProjects
-                  .sort((a, b) => a.projectName.localeCompare(b.projectName))
-                  .map((project) => (
-                    <li key={project.projectId}>{project.projectName}</li>
-                  ))}
-              </ul>
-            </div>
-          ))}
-      </div>
-    )
-  } else {
-    return renderContent(message.content as MessageContent)
-  }
-}
-
-function renderContent(content: MessageContent): ReactNode {
-  if (Array.isArray(content)) {
-    return content.map((m) => renderContent(m)).join(' ')
-  } else if (typeof content === 'string') {
-    return content
-  } else if (content.type === 'text') {
-    return content.text
-  } else {
-    return null
-  }
 }

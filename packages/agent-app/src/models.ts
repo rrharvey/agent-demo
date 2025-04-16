@@ -1,5 +1,19 @@
 import { z } from 'zod'
 
+export type MessageContentText = {
+  type: 'text'
+  text: string
+}
+
+export type MesageContentToolUse = {
+  type: 'tool_use'
+  name: string
+  id: string
+  input: Record<string, unknown>
+}
+
+export type MessageContent = string | MessageContentText | MesageContentToolUse
+
 // Define the schema for a single project
 const Project = z.object({
   projectId: z.string().uuid(),
