@@ -1,0 +1,6 @@
+dotenv
+langchain-anthropic
+langchain-community
+langchain-core
+langgraph
+langgraph-prebuilt
