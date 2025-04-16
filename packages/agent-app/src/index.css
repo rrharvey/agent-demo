@@ -69,6 +69,19 @@ body {
   width: 95%;
 }
 
+.message.project-list h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.message.project-list h4 {
+  font-size: 0.8rem;
+}
+
+.client-group {
+  margin-bottom: 1rem;
+}
+
 .message-header {
   font-weight: 600;
   margin-bottom: 0.5rem;
