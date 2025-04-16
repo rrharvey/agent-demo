@@ -59,6 +59,7 @@ body {
   background-color: var(--user-msg-bg);
   align-self: flex-end;
   border-bottom-right-radius: 0.0625rem;
+  min-width: 20%;
 }
 
 .ai-message {

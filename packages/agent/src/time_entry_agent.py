@@ -78,14 +78,6 @@ def review(state) -> Command[Literal["assistant", "tools"]]:
     # this is the value we'll be providing via Command(resume=<human_review>)
     human_review = interrupt(
         {
-            "question": f"""
-            Client: {args['clientName']}
-            Project: {args['projectName']}
-            Date: {args['date']}
-            Hours: {args['hours']}
-            Continue?
-            """,
-            # Surface tool calls for review
             "tool_call": tool_call,
         }
     )
