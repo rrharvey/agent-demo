@@ -33,7 +33,7 @@ def book_time_entry(clientName: str, projectName: str, projectId: str, date: str
     """
     Books a time entry for a given project.
 
-    Args:
+    Args: 
         clientName (str): The name of the client.
         projectName (str): The name of the project.
         projectId (str): The unique identifier for the project.
@@ -49,14 +49,16 @@ tools = [get_projects, book_time_entry]
 
 model = ChatAnthropic(model="claude-3-7-sonnet-20250219").bind_tools(tools)
 
-sys_msg = SystemMessage(content=f"""
-    You are a helpful assistant tasked with helping Intertech employees track 
-    time spent on projects. Time off, paid time off, PTO, and sick time are all booked
-    as PTO. You may not help with anything else. Do not expose
-    project IDs. Use plain text in responses. Do not use markdown or code blocks.
-    After the book_time_entry tool is called, summarize the entry that was created using
-    the data returned from the tool. Today is {date.today().isoformat()}.
-    """)
+
+def load_system_prompt():
+    """Load the system prompt from a text file and format it with the current date."""
+    prompt_path = os.path.join(os.path.dirname(__file__), "system_prompt.txt")
+    with open(prompt_path, "r") as f:
+        prompt_template = f.read()
+    return prompt_template.format(date=date.today().isoformat())
+
+
+sys_msg = SystemMessage(content=load_system_prompt())
 
 
 def assistant(state: MessagesState):
