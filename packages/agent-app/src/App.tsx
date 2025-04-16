@@ -2,24 +2,32 @@
 
 import type { Message } from '@langchain/langgraph-sdk'
 import { useStream } from '@langchain/langgraph-sdk/react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { LoadingIndicator } from './components/LoadingIndicator'
 import { MessageRenderer } from './components/MessageRenderer'
 import { TimeEntryApproval } from './components/TimeEntryApproval'
-import { LoadingIndicator } from './components/LoadingIndicator'
 import { InterruptValue } from './models'
 
 export default function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [localMessages, setLocalMessages] = useState<Message[]>([])
   const { messages, isLoading, submit, stop, interrupt } = useStream<{ messages: Message[] }>({
     apiUrl: 'http://localhost:2024',
     assistantId: 'time_entry',
   })
 
+  // Sync backend messages with local state
+  useEffect(() => {
+    if (messages.length > 0) {
+      setLocalMessages(messages)
+    }
+  }, [messages])
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [localMessages, isLoading])
 
   // Set focus to input field when assistant finishes responding
   useEffect(() => {
@@ -34,8 +42,8 @@ export default function App() {
   return (
     <div className="chat-container">
       <div className="chat-messages">
-        {messages.map((message) => (
-          <MessageRenderer key={message.id} message={message} />
+        {localMessages.map((message) => (
+          <MessageRenderer key={message.id || `local-${Date.now()}`} message={message} />
         ))}
         {isLoading && <LoadingIndicator />}
         <div ref={messagesEndRef} />
@@ -61,12 +69,24 @@ export default function App() {
           e.preventDefault()
 
           const form = e.target as HTMLFormElement
-          const message = new FormData(form).get('message') as string
+          const messageText = new FormData(form).get('message') as string
 
-          if (!message.trim()) return
+          if (!messageText.trim()) return
 
           form.reset()
-          submit({ messages: [{ type: 'human', content: message }] })
+
+          // Create a local message object with a temporary ID
+          const userMessage: Message = {
+            id: `local-${Date.now()}`,
+            type: 'human',
+            content: messageText,
+          }
+
+          // Update local messages immediately
+          setLocalMessages((prev) => [...prev, userMessage])
+
+          // Then send to backend
+          submit({ messages: [{ type: 'human', content: messageText }] })
         }}
       >
         <input
