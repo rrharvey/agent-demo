@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "api": "cd packages/api && dotnet run",
+    "agent": "cd packages/agent/src && langgraph dev --host 0.0.0.0",
+    "agent-app": "cd packages/agent-app && pnpm dev",
+    "app": "cd packages/app && pnpm dev"
   },
   "keywords": [],
   "author": "",
