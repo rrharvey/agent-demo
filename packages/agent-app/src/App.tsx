@@ -5,6 +5,7 @@ import { useStream } from '@langchain/langgraph-sdk/react'
 import { useEffect, useRef } from 'react'
 import { MessageCard } from './components/MessageCard'
 import { TimeEntryApproval } from './components/TimeEntryApproval'
+import { LoadingIndicator } from './components/LoadingIndicator'
 import { InterruptValue } from './models'
 
 export default function App() {
@@ -28,35 +29,19 @@ export default function App() {
   }, [isLoading, messages.length])
 
   const interruptValue = interrupt ? InterruptValue.parse(interrupt.value) : null
-  const timeEntry = interruptValue?.tool_call.name === 'book_time_entry'
+  const review = interruptValue?.tool_call.name === 'book_time_entry'
 
   return (
     <div className="chat-container">
       <div className="chat-messages">
         {messages.map((message) => (
-          <div key={message.id} className={`message ${message.type === 'human' ? 'user-message' : 'ai-message'}`}>
-            <div className="message-header">{message.type === 'human' ? 'You' : 'Assistant'}</div>
-            <div className="message-content">
-              <MessageCard message={message} />
-            </div>
-          </div>
+          <MessageCard key={message.id} message={message} />
         ))}
-        {isLoading && (
-          <div className="message ai-message">
-            <div className="message-header">Assistant</div>
-            <div className="message-content">
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </div>
-          </div>
-        )}
+        {isLoading && <LoadingIndicator />}
         <div ref={messagesEndRef} />
       </div>
 
-      {timeEntry && (
+      {review && (
         <TimeEntryApproval
           toolCall={interruptValue.tool_call}
           onApprove={() => {
@@ -91,6 +76,11 @@ export default function App() {
           placeholder="Type your message here..."
           disabled={isLoading}
           className="message-input"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck="false"
+          data-form-type="other"
         />
 
         <button type="submit" disabled={isLoading} className="send-button">
