@@ -63,6 +63,12 @@ export const ToolCall = z.discriminatedUnion('name', [
 // Export the type
 export type ToolCall = z.infer<typeof ToolCall>
 
+export const InterruptValue = z.object({
+  tool_call: ToolCall,
+})
+
+export type InterruptValue = z.infer<typeof InterruptValue>
+
 // Function to parse and validate tool calls
 export function parseToolCall(data: unknown): ToolCall {
   return ToolCall.parse(data)

@@ -3,6 +3,7 @@
   --primary-color: #4788c7; /* Ocean blue color from the image */
   --primary-light: #72a8d8; /* Lighter blue variant */
   --primary-dark: #2c5d8f; /* Darker blue variant */
+  --accent-color: #ffc85e; /* Golden yellow color */
   --user-msg-bg: #f3f4f6; /* Light gray background */
   --ai-msg-bg: #e6f0f9; /* Light blue background for AI messages */
   --border-color: #d0d7e1; /* Subtle border color */
@@ -162,6 +163,64 @@ body {
 
 .typing-indicator span:nth-child(3) {
   animation-delay: 0.4s;
+}
+
+/* Time Entry Approval styles */
+.time-entry-approval {
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.time-entry-approval .message {
+  width: 100%;
+  max-width: 100%;
+  background-color: var(--accent-color);
+}
+
+.time-entry-details {
+  margin: 1rem 0;
+  list-style-type: none;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 0.25rem;
+}
+
+.time-entry-details li {
+  margin-bottom: 0.5rem;
+}
+
+.approval-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.approve-button,
+.cancel-button {
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.approve-button {
+  background-color: #22c55e;
+  color: white;
+}
+
+.approve-button:hover {
+  background-color: #16a34a;
+}
+
+.cancel-button {
+  background-color: #ef4444;
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: #dc2626;
 }
 
 @keyframes blink {

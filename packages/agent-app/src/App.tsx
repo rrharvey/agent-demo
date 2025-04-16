@@ -4,11 +4,13 @@ import type { Message } from '@langchain/langgraph-sdk'
 import { useStream } from '@langchain/langgraph-sdk/react'
 import { useEffect, useRef } from 'react'
 import { MessageCard } from './components/MessageCard'
+import { TimeEntryApproval } from './components/TimeEntryApproval'
+import { InterruptValue } from './models'
 
 export default function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const thread = useStream<{ messages: Message[] }>({
+  const { messages, isLoading, submit, stop, interrupt } = useStream<{ messages: Message[] }>({
     apiUrl: 'http://localhost:2024',
     assistantId: 'time_entry',
   })
@@ -16,21 +18,22 @@ export default function App() {
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [thread.messages])
+  }, [messages])
 
   // Set focus to input field when assistant finishes responding
   useEffect(() => {
-    if (!thread.isLoading && thread.messages.length > 0) {
+    if (!isLoading && messages.length > 0) {
       inputRef.current?.focus()
     }
-  }, [thread.isLoading, thread.messages.length])
+  }, [isLoading, messages.length])
 
-  const chatMessages = thread.messages
+  const interruptValue = interrupt ? InterruptValue.parse(interrupt.value) : null
+  const timeEntry = interruptValue?.tool_call.name === 'book_time_entry'
 
   return (
     <div className="chat-container">
       <div className="chat-messages">
-        {chatMessages.map((message) => (
+        {messages.map((message) => (
           <div key={message.id} className={`message ${message.type === 'human' ? 'user-message' : 'ai-message'}`}>
             <div className="message-header">{message.type === 'human' ? 'You' : 'Assistant'}</div>
             <div className="message-content">
@@ -38,7 +41,7 @@ export default function App() {
             </div>
           </div>
         ))}
-        {thread.isLoading && (
+        {isLoading && (
           <div className="message ai-message">
             <div className="message-header">Assistant</div>
             <div className="message-content">
@@ -53,6 +56,20 @@ export default function App() {
         <div ref={messagesEndRef} />
       </div>
 
+      {timeEntry && (
+        <TimeEntryApproval
+          toolCall={interruptValue.tool_call}
+          onApprove={() => {
+            submit(undefined, { command: { resume: { action: 'continue' } } })
+          }}
+          onCancel={() => {
+            submit(undefined, {
+              command: { resume: { action: 'feedback', data: 'That does not look right. We should start over.' } },
+            })
+          }}
+        />
+      )}
+
       <form
         className="message-input-form"
         onSubmit={(e) => {
@@ -64,7 +81,7 @@ export default function App() {
           if (!message.trim()) return
 
           form.reset()
-          thread.submit({ messages: [{ type: 'human', content: message }] })
+          submit({ messages: [{ type: 'human', content: message }] })
         }}
       >
         <input
@@ -72,16 +89,16 @@ export default function App() {
           type="text"
           name="message"
           placeholder="Type your message here..."
-          disabled={thread.isLoading}
+          disabled={isLoading}
           className="message-input"
         />
 
-        <button type="submit" disabled={thread.isLoading} className="send-button">
+        <button type="submit" disabled={isLoading} className="send-button">
           Send
         </button>
 
-        {thread.isLoading && (
-          <button type="button" onClick={() => thread.stop()} className="stop-button">
+        {isLoading && (
+          <button type="button" onClick={() => stop()} className="stop-button">
             Stop
           </button>
         )}
