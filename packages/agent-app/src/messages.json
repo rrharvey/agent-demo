@@ -1,0 +1,97 @@
+[
+  {
+    "content": "I did some work yesterday",
+    "additional_kwargs": {},
+    "response_metadata": {},
+    "type": "human",
+    "name": null,
+    "id": "2e5f61e2-37a6-4086-a052-17364f796765",
+    "example": false
+  },
+  {
+    "content": [
+      {
+        "text": "I'd be happy to help you log your time for yesterday (2025-04-15). To book a time entry, I'll need a few more details:\n\n1. Which project did you work on?\n2. How many hours did you spend on this work?\n\nLet me show you the available projects so you can select the correct one:",
+        "type": "text",
+        "index": 0
+      },
+      {
+        "id": "toolu_01EhQQ2h2LhFz8wPBnaMsmQD",
+        "input": {},
+        "name": "get_projects",
+        "type": "tool_use",
+        "index": 1,
+        "partial_json": ""
+      }
+    ],
+    "additional_kwargs": {},
+    "response_metadata": {
+      "model_name": "claude-3-7-sonnet-20250219",
+      "stop_reason": "tool_use",
+      "stop_sequence": null
+    },
+    "type": "ai",
+    "name": null,
+    "id": "run-3c25fc87-8372-4829-aa7b-bf85f967e42b",
+    "example": false,
+    "tool_calls": [
+      {
+        "name": "get_projects",
+        "args": {},
+        "id": "toolu_01EhQQ2h2LhFz8wPBnaMsmQD",
+        "type": "tool_call"
+      }
+    ],
+    "invalid_tool_calls": [],
+    "usage_metadata": {
+      "input_tokens": 630,
+      "output_tokens": 111,
+      "total_tokens": 741,
+      "input_token_details": {
+        "cache_creation": 0,
+        "cache_read": 0
+      }
+    }
+  },
+  {
+    "content": "{\"projects\": [{\"projectId\": \"2509d9c7-2b5f-498b-b766-289a0ce44d28\", \"projectName\": \"Cloud Migration Strategy\", \"clientName\": \"Innovate Systems\"}, {\"projectId\": \"3c17ae7d-84c9-48a7-9efd-41ec6b88e31f\", \"projectName\": \"DevOps Pipeline Implementation\", \"clientName\": \"Innovate Systems\"}, {\"projectId\": \"4f350f44-58b2-4147-ae4a-7b7d4efe3be2\", \"projectName\": \"E-commerce Platform Redesign\", \"clientName\": \"TechSolutions Inc.\"}, {\"projectId\": \"6764b5a9-cd1f-4943-a3a6-65ef492b9d3e\", \"projectName\": \"Paid Time Off\", \"clientName\": \"Intertech\"}, {\"projectId\": \"7cd006ac-0cc9-44c2-a4de-424a90336e90\", \"projectName\": \"Enterprise CRM Integration\", \"clientName\": \"NextGen Software\"}, {\"projectId\": \"7dfbb9d9-58c2-4056-8f0f-c14b8acd517c\", \"projectName\": \"IoT Monitoring Solution\", \"clientName\": \"CoreLogic Systems\"}, {\"projectId\": \"8ba5c612-90d8-4f27-a417-729d4690b201\", \"projectName\": \"Mobile App Development\", \"clientName\": \"TechSolutions Inc.\"}, {\"projectId\": \"97f7871e-da7c-4d11-a236-3504c50bf7c1\", \"projectName\": \"Holiday\", \"clientName\": \"Intertech\"}, {\"projectId\": \"ac9d46eb-b110-4705-8109-0d6d6281bfd8\", \"projectName\": \"Blockchain Supply Chain Tracking\", \"clientName\": \"SmartFlow Solutions\"}, {\"projectId\": \"b06e3093-9c41-4770-b74a-52fd80c4913c\", \"projectName\": \"Security Compliance System\", \"clientName\": \"BrightPath Data\"}, {\"projectId\": \"bcc51961-1bc7-4267-9648-5416ec556edd\", \"projectName\": \"Microservices Architecture Refactoring\", \"clientName\": \"CloudWave Technologies\"}, {\"projectId\": \"d17ed650-8dac-45bd-8c52-64dab4a64f79\", \"projectName\": \"Cross-Platform Mobile Framework\", \"clientName\": \"MobileFirst Enterprises\"}, {\"projectId\": \"d746ab82-bca4-4fd1-9caa-c12cee5976d9\", \"projectName\": \"Data Analytics Dashboard\", \"clientName\": \"Agile Dynamics\"}, {\"projectId\": \"df8387dc-f805-4715-9263-442dc823044f\", \"projectName\": \"Bench\", \"clientName\": \"Intertech\"}, {\"projectId\": \"e1d598f0-e6dd-43b1-8e6d-5f7cf903900a\", \"projectName\": \"AI-Powered Customer Portal\", \"clientName\": \"Digital Frontier\"}, {\"projectId\": \"e91d92a3-e1a2-42e9-a4e0-79f801435d52\", \"projectName\": \"Administrative\", \"clientName\": \"Intertech\"}]}",
+    "additional_kwargs": {},
+    "response_metadata": {},
+    "type": "tool",
+    "name": "get_projects",
+    "id": "12529f59-0629-42cc-a32e-c36d880a308b",
+    "tool_call_id": "toolu_01EhQQ2h2LhFz8wPBnaMsmQD",
+    "artifact": null,
+    "status": "success"
+  },
+  {
+    "content": [
+      {
+        "text": "Please let me know:\n1. Which project from the list above did you work on yesterday\n2. How many hours you spent on the project\n\nOnce you provide this information, I can book your time entry for 2025-04-15.",
+        "type": "text",
+        "index": 0
+      }
+    ],
+    "additional_kwargs": {},
+    "response_metadata": {
+      "model_name": "claude-3-7-sonnet-20250219",
+      "stop_reason": "end_turn",
+      "stop_sequence": null
+    },
+    "type": "ai",
+    "name": null,
+    "id": "run-d4b7398f-e8ea-4b1f-9e18-f83fa2a37a5a",
+    "example": false,
+    "tool_calls": [],
+    "invalid_tool_calls": [],
+    "usage_metadata": {
+      "input_tokens": 1585,
+      "output_tokens": 58,
+      "total_tokens": 1643,
+      "input_token_details": {
+        "cache_creation": 0,
+        "cache_read": 0
+      }
+    }
+  }
+]

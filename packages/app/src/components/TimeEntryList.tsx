@@ -195,7 +195,9 @@ export function TimeEntryList() {
                 const projectDetails = getProjectDetails(entry.projectId)
                 return (
                   <TableRow key={entry.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell>{format(new Date(entry.date), 'MMM dd, yyyy')}</TableCell>
+                    <TableCell>
+                      {entry.date ? format(new Date(`${entry.date}T00:00:00`), 'EEE, MMM dd, yyyy') : ''}
+                    </TableCell>
                     <TableCell>
                       {projectDetails ? (
                         <>
