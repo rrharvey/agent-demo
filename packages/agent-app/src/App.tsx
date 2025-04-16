@@ -3,7 +3,7 @@
 import type { Message } from '@langchain/langgraph-sdk'
 import { useStream } from '@langchain/langgraph-sdk/react'
 import { useEffect, useRef } from 'react'
-import { MessageCard } from './components/MessageCard'
+import { MessageRenderer } from './components/MessageRenderer'
 import { TimeEntryApproval } from './components/TimeEntryApproval'
 import { LoadingIndicator } from './components/LoadingIndicator'
 import { InterruptValue } from './models'
@@ -35,7 +35,7 @@ export default function App() {
     <div className="chat-container">
       <div className="chat-messages">
         {messages.map((message) => (
-          <MessageCard key={message.id} message={message} />
+          <MessageRenderer key={message.id} message={message} />
         ))}
         {isLoading && <LoadingIndicator />}
         <div ref={messagesEndRef} />

@@ -1,18 +1,23 @@
 import { z } from 'zod'
 
-export type MessageContentText = {
+type ImageDetail = 'auto' | 'low' | 'high'
+
+type MessageContentImageUrl = {
+  type: 'image_url'
+  image_url:
+    | string
+    | {
+        url: string
+        detail?: ImageDetail | undefined
+      }
+}
+type MessageContentText = {
   type: 'text'
   text: string
 }
+type MessageContentComplex = MessageContentText | MessageContentImageUrl
 
-export type MesageContentToolUse = {
-  type: 'tool_use'
-  name: string
-  id: string
-  input: Record<string, unknown>
-}
-
-export type MessageContent = string | MessageContentText | MesageContentToolUse
+export type MessageContent = string | MessageContentComplex[]
 
 const ToolCallBase = z.object({
   name: z.string(),

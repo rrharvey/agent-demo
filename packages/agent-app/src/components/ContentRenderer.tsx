@@ -1,19 +1,32 @@
-import { MessageContent } from '../models'
+import { isComplexContentArray, isImageUrlContent, isStringContent, isTextContent } from '../contentTypes'
 
-export const ContentRenderer = ({ content }: { content: MessageContent }) => {
-  if (Array.isArray(content)) {
+export const ContentRenderer = ({ content }: { content: unknown }) => {
+  if (isStringContent(content)) {
+    return <>{content}</>
+  }
+
+  if (isComplexContentArray(content)) {
     return (
       <>
-        {content.map((m, idx) => (
-          <ContentRenderer key={idx} content={m} />
-        ))}
+        {content.map((item, idx) => {
+          if (isTextContent(item)) {
+            return <div key={idx}>{item.text}</div>
+          }
+
+          if (isImageUrlContent(item)) {
+            const imageUrl = typeof item.image_url === 'string' ? item.image_url : item.image_url.url
+
+            return <img key={idx} src={imageUrl} alt="Content image" className="content-image" />
+          }
+
+          // Don't render anything for tool use
+          return null
+        })}
       </>
     )
-  } else if (typeof content === 'string') {
-    return <>{content}</>
-  } else if (content.type === 'text') {
-    return <>{content.text}</>
-  } else {
-    return null
   }
+
+  // Don't render anything if the content is not a string or complex array
+  console.warn(content)
+  return JSON.stringify(content)
 }
