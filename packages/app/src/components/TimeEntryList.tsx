@@ -51,7 +51,7 @@ export function TimeEntryList() {
     error: timeEntriesError,
   } = useQuery(
     getTimeEntriesForUserQuery({
-      userId: 'user123',
+      userId: 'user1234',
       startDate,
       endDate,
     }),
@@ -130,7 +130,25 @@ export function TimeEntryList() {
     )
   }
 
-  const timeEntriesList = timeEntries?.timeEntries || []
+  // Sort time entries by date (ascending) and then by client name
+  const timeEntriesList = [...(timeEntries?.timeEntries || [])].sort((a, b) => {
+    // First, sort by date in ascending order (oldest first)
+    const dateA = new Date(a.date).getTime()
+    const dateB = new Date(b.date).getTime()
+
+    if (dateA !== dateB) {
+      return dateA - dateB
+    }
+
+    // For same dates, sort by client name
+    const detailsA = getProjectDetails(a.projectId)
+    const detailsB = getProjectDetails(b.projectId)
+
+    const clientNameA = detailsA?.clientName || ''
+    const clientNameB = detailsB?.clientName || ''
+
+    return clientNameA.localeCompare(clientNameB)
+  })
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>

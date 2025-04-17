@@ -35,7 +35,7 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
   const queryClient = useQueryClient()
 
   // Use a mock user ID for now
-  const userId = 'user123'
+  const userId = 'user1234'
 
   // Default form values
   const defaultFormValues = {
