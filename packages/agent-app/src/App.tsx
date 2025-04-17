@@ -116,7 +116,10 @@ export default function App() {
           <TimeEntryApproval
             toolCall={interruptValue.tool_call}
             onApprove={() => {
-              submit(undefined, { command: { resume: { action: 'continue' } } })
+              submit(undefined, { command: { resume: { action: 'approve' } } })
+            }}
+            onUpdate={(data) => {
+              submit(undefined, { command: { resume: { action: 'update', data } } })
             }}
             onCancel={() => {
               submit(undefined, {

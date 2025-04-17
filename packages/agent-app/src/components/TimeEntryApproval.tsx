@@ -5,9 +5,10 @@ import { Project, ToolCall } from '../models'
 
 // Interface for TimeEntryApproval props
 interface TimeEntryApprovalProps {
-  toolCall: ToolCall
   onApprove: (formData: TimeEntryFormData) => void
   onCancel: () => void
+  onUpdate: (formData: TimeEntryFormData) => void
+  toolCall: ToolCall
 }
 
 // Interface for form data
@@ -19,7 +20,7 @@ interface TimeEntryFormData {
   hours: number
 }
 
-export const TimeEntryApproval = ({ toolCall, onApprove, onCancel }: TimeEntryApprovalProps) => {
+export const TimeEntryApproval = ({ toolCall, onApprove, onCancel, onUpdate }: TimeEntryApprovalProps) => {
   const { clientName, projectName, projectId, date, hours } = toolCall.args
   const { data: projectsData, isLoading } = useQuery(projectsOptions())
 
@@ -91,7 +92,11 @@ export const TimeEntryApproval = ({ toolCall, onApprove, onCancel }: TimeEntryAp
 
   // Form submission handler
   const onSubmit: SubmitHandler<TimeEntryFormData> = (data) => {
-    onApprove(data)
+    if (isDirty) {
+      onUpdate(data)
+    } else {
+      onApprove(data)
+    }
   }
 
   if (isLoading) {

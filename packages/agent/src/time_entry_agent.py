@@ -87,7 +87,7 @@ def review(state) -> Command[Literal["assistant", "tools"]]:
     review_data = human_review.get("data")
 
     # if approved, call the tool
-    if review_action == "continue":
+    if review_action == "approve":
         return Command(goto="tools")
 
     # update the AI message AND call tools
