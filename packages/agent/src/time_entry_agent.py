@@ -59,8 +59,11 @@ def get_database_schema():
 @tool
 def execute_query(query: str):
     """
-    Executes a SQL query on the time tracking database.
+    Executes a SQL SELECT query on the time tracking database.
     """
+    # Check if query contains any data modification keywords
+    if any(keyword in query.lower() for keyword in ["delete", "insert", "update"]):
+        return "You are not allowed to modify existing data. You may only create new time entries."
     db = DatabaseAccess()
     result = db.execute_query(query)
     return result

@@ -55,6 +55,7 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
+    background-position: bottom left;
     opacity: 0.2;
     z-index: -1;
   }
