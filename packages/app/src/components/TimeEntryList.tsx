@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
   Paper,
   Stack,
   Table,
@@ -25,6 +26,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { getAllClientsQuery } from '../api/clientsService'
@@ -230,7 +232,9 @@ export function TimeEntryList() {
                 <TableCell>Date</TableCell>
                 <TableCell>Project</TableCell>
                 <TableCell>Hours</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell align="center" sx={{ width: '100px' }}>
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -273,26 +277,31 @@ export function TimeEntryList() {
                             )}
                           </TableCell>
                           <TableCell>{entry.hours}</TableCell>
-                          <TableCell align="right">
-                            <Button
-                              component={Link}
-                              to={`/time-entries/${entry.id}`}
-                              size="small"
-                              startIcon={<EditIcon />}
-                              sx={{ mr: 1 }}
-                              color="secondary"
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              size="small"
-                              color="error"
-                              startIcon={<DeleteIcon />}
-                              onClick={() => handleDeleteClick(entry.id)}
-                              disabled={deleteMutation.isPending}
-                            >
-                              Delete
-                            </Button>
+                          <TableCell align="center">
+                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                              <Tooltip title="Edit time entry">
+                                <IconButton
+                                  component={Link}
+                                  to={`/time-entries/${entry.id}`}
+                                  size="small"
+                                  color="secondary"
+                                  aria-label="edit"
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete time entry">
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => handleDeleteClick(entry.id)}
+                                  disabled={deleteMutation.isPending}
+                                  aria-label="delete"
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
                           </TableCell>
                         </TableRow>
                       )
