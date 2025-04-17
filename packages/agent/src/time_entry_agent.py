@@ -1,8 +1,9 @@
 from datetime import date
+from db_access import DatabaseAccess
 from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import SystemMessage, ToolMessage
 from langchain_core.messages import RemoveMessage
+from langchain_core.messages import SystemMessage, ToolMessage
 from langchain_core.tools import tool
 from langgraph.graph import StateGraph, START, END, MessagesState
 from langgraph.prebuilt import ToolNode
@@ -45,7 +46,27 @@ def book_time_entry(clientName: str, projectName: str, projectId: str, date: str
     return entry
 
 
-tools = [get_projects, book_time_entry]
+@tool
+def get_database_schema():
+    """
+    Returns the database schema for the time tracking system.
+    """
+    db = DatabaseAccess()
+    schema = db.get_schema()
+    return schema
+
+
+@tool
+def execute_query(query: str):
+    """
+    Executes a SQL query on the time tracking database.
+    """
+    db = DatabaseAccess()
+    result = db.execute_query(query)
+    return result
+
+
+tools = [get_projects, book_time_entry, get_database_schema, execute_query]
 
 model = ChatAnthropic(model="claude-3-7-sonnet-20250219",
                       temperature=0).bind_tools(tools)
@@ -70,11 +91,9 @@ def review(state) -> Command[Literal["assistant", "tools"]]:
     last_message = state["messages"][-1]
     tool_call = last_message.tool_calls[-1]
 
-    if tool_call["name"] == "get_projects":
-        # If the tool call is for get_projects, we don't need to ask for human review
+    if tool_call["name"] != "book_time_entry":
+        # If the tool call is not for booking a time entry, just run the tool
         return Command(goto="tools")
-
-    args = tool_call["args"]
 
     # this is the value we'll be providing via Command(resume=<human_review>)
     human_review = interrupt(
@@ -131,7 +150,7 @@ def route_after_llm(state) -> Literal[END, "review"]:
 
 builder = StateGraph(MessagesState)
 builder.add_node(assistant)
-builder.add_node(ToolNode([get_projects, book_time_entry]))
+builder.add_node(ToolNode(tools))
 builder.add_node(review)
 builder.add_edge(START, "assistant")
 builder.add_conditional_edges("assistant", route_after_llm)
