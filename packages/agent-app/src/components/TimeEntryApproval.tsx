@@ -202,7 +202,13 @@ export const TimeEntryApproval = ({ toolCall, onApprove, onCancel }: TimeEntryAp
                       {...field}
                       step="0.25"
                       min="0.25"
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      onBlur={(e) => {
+                        // Round to nearest quarter hour (0.25) when field loses focus
+                        const value = parseFloat(e.target.value)
+                        const roundedValue = Math.round(value * 4) / 4
+                        field.onChange(roundedValue)
+                        field.onBlur()
+                      }}
                     />
                   )}
                 />
