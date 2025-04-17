@@ -282,6 +282,14 @@ export function TimeEntryList() {
                       </TableRow>
                     )
                   })}
+                  {/* Weekly total row */}
+                  <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
+                    <TableCell colSpan={2} sx={{ py: 1 }} />
+                    <TableCell sx={{ fontWeight: 'bold', py: 1 }}>
+                      {entries.reduce((total, entry) => total + entry.hours, 0).toFixed(2)}
+                    </TableCell>
+                    <TableCell sx={{ py: 1 }} />
+                  </TableRow>
                 </React.Fragment>
               ))}
             </TableBody>
