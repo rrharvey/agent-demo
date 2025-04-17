@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { FormEvent, useEffect, useState } from 'react'
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { projectsOptions } from '../api'
 import { Project, ToolCall } from '../models'
 
@@ -23,6 +23,26 @@ export const TimeEntryApproval = ({ toolCall, onApprove, onCancel }: TimeEntryAp
   const { clientName, projectName, projectId, date, hours } = toolCall.args
   const { data: projectsData, isLoading } = useQuery(projectsOptions())
 
+  // Setup react-hook-form
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { isDirty },
+  } = useForm<TimeEntryFormData>({
+    defaultValues: {
+      clientName,
+      projectName,
+      projectId: projectId || '',
+      date: new Date(date).toISOString().split('T')[0], // Format as YYYY-MM-DD for date input
+      hours,
+    },
+  })
+
+  // Watch for form changes
+  const watchedClientName = watch('clientName')
+
   // Group projects by client for dropdown organization
   const clientsWithProjects = projectsData?.projects
     ? projectsData.projects.reduce((acc, project) => {
@@ -38,89 +58,40 @@ export const TimeEntryApproval = ({ toolCall, onApprove, onCancel }: TimeEntryAp
   // Get unique client names
   const clients = Object.keys(clientsWithProjects)
 
-  // Initialize form state with values from toolCall
-  const [formData, setFormData] = useState<TimeEntryFormData>({
-    clientName,
-    projectName,
-    projectId: projectId || '',
-    date: new Date(date).toISOString().split('T')[0], // Format as YYYY-MM-DD for date input
-    hours,
-  })
-
-  // Track if form has been modified
-  const [isModified, setIsModified] = useState(false)
-
-  // Track available projects for selected client
-  const [availableProjects, setAvailableProjects] = useState<Project[]>([])
-
-  // Update available projects when client changes or when projects data loads
-  useEffect(() => {
-    if (projectsData?.projects && formData.clientName) {
-      const clientProjects = projectsData.projects.filter((project) => project.clientName === formData.clientName)
-      setAvailableProjects(clientProjects)
-    } else {
-      setAvailableProjects([])
-    }
-  }, [projectsData?.projects, formData.clientName, setAvailableProjects])
-
-  // Handle client selection change
-  const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { value } = e.target
-
-    // Find projects for the selected client
-    const clientProjects = projectsData?.projects?.filter((project) => project.clientName === value) || []
-
-    // If only one project is available, select it automatically
-    if (clientProjects.length === 1) {
-      const singleProject = clientProjects[0]
-      setFormData((prev) => ({
-        ...prev,
-        clientName: value,
-        projectName: singleProject.projectName,
-        projectId: singleProject.projectId,
-      }))
-    } else {
-      // Otherwise, just update the client and reset project
-      setFormData((prev) => ({
-        ...prev,
-        clientName: value,
-        projectName: '',
-        projectId: '',
-      }))
-    }
-
-    setIsModified(true)
-  }
+  // Set available projects based on the currently selected client
+  const availableProjects =
+    projectsData?.projects && watchedClientName
+      ? projectsData.projects.filter((project) => project.clientName === watchedClientName)
+      : []
 
   // Handle project selection change
-  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { value } = e.target
+  const handleProjectChange = (value: string) => {
     const selectedProject = projectsData?.projects?.find((p) => p.projectId === value)
-
     if (selectedProject) {
-      setFormData((prev) => ({
-        ...prev,
-        projectId: selectedProject.projectId,
-        projectName: selectedProject.projectName,
-      }))
-      setIsModified(true)
+      setValue('projectName', selectedProject.projectName, { shouldDirty: true })
     }
   }
 
-  // Handle form input changes for non-select fields
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'hours' ? parseFloat(value) : value,
-    }))
-    setIsModified(true)
+  // Handle client selection change
+  const handleClientChange = (value: string) => {
+    // Get projects for the selected client
+    const clientProjects = projectsData?.projects?.filter((project) => project.clientName === value) || []
+
+    // If only one project is available for the selected client, select it automatically
+    if (clientProjects.length === 1) {
+      const singleProject = clientProjects[0]
+      setValue('projectId', singleProject.projectId)
+      setValue('projectName', singleProject.projectName)
+    } else if (clientProjects.length === 0 && value !== clientName && watch('projectId')) {
+      // Reset project fields if client has changed and has no projects
+      setValue('projectId', '')
+      setValue('projectName', '')
+    }
   }
 
-  // Handle form submission
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    onApprove(formData)
+  // Form submission handler
+  const onSubmit: SubmitHandler<TimeEntryFormData> = (data) => {
+    onApprove(data)
   }
 
   if (isLoading) {
@@ -140,75 +111,104 @@ export const TimeEntryApproval = ({ toolCall, onApprove, onCancel }: TimeEntryAp
       <div className="message">
         <div className="message-content">
           <p>Please confirm or edit the following time entry:</p>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="time-entry-form">
               <div className="form-group">
                 <label htmlFor="clientName">
                   <strong>Client:</strong>
                 </label>
-                <select
-                  id="clientName"
+                <Controller
                   name="clientName"
-                  value={formData.clientName}
-                  onChange={handleClientChange}
-                  required
-                  className="form-select"
-                >
-                  <option value="">Select a client...</option>
-                  {clients.map((client) => (
-                    <option key={client} value={client}>
-                      {client}
-                    </option>
-                  ))}
-                </select>
+                  control={control}
+                  rules={{ required: 'Client is required' }}
+                  render={({ field }) => (
+                    <select
+                      id="clientName"
+                      {...field}
+                      className="form-select"
+                      onChange={(e) => {
+                        field.onChange(e)
+                        handleClientChange(e.target.value)
+                      }}
+                    >
+                      <option value="">Select a client...</option>
+                      {clients.map((client) => (
+                        <option key={client} value={client}>
+                          {client}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="projectId">
                   <strong>Project:</strong>
                 </label>
-                <select
-                  id="projectId"
+                <Controller
                   name="projectId"
-                  value={formData.projectId}
-                  onChange={handleProjectChange}
-                  required
-                  disabled={!formData.clientName}
-                  className="form-select"
-                >
-                  <option value="">Select a project...</option>
-                  {availableProjects.map((project) => (
-                    <option key={project.projectId} value={project.projectId}>
-                      {project.projectName}
-                    </option>
-                  ))}
-                </select>
+                  control={control}
+                  rules={{ required: 'Project is required' }}
+                  render={({ field }) => (
+                    <select
+                      id="projectId"
+                      {...field}
+                      disabled={!watchedClientName}
+                      className="form-select"
+                      onChange={(e) => {
+                        field.onChange(e)
+                        handleProjectChange(e.target.value)
+                      }}
+                    >
+                      <option value="">Select a project...</option>
+                      {availableProjects.map((project) => (
+                        <option key={project.projectId} value={project.projectId}>
+                          {project.projectName}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="date">
                   <strong>Date:</strong>
                 </label>
-                <input type="date" id="date" name="date" value={formData.date} onChange={handleInputChange} required />
+                <Controller
+                  name="date"
+                  control={control}
+                  rules={{ required: 'Date is required' }}
+                  render={({ field }) => <input type="date" id="date" {...field} />}
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="hours">
                   <strong>Hours:</strong>
                 </label>
-                <input
-                  type="number"
-                  id="hours"
+                <Controller
                   name="hours"
-                  value={formData.hours}
-                  onChange={handleInputChange}
-                  step="0.25"
-                  min="0.25"
-                  required
+                  control={control}
+                  rules={{
+                    required: 'Hours are required',
+                    min: { value: 0.25, message: 'Hours must be at least 0.25' },
+                  }}
+                  render={({ field }) => (
+                    <input
+                      type="number"
+                      id="hours"
+                      {...field}
+                      step="0.25"
+                      min="0.25"
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    />
+                  )}
                 />
               </div>
 
-              {isModified && (
+              {isDirty && (
                 <div className="modified-indicator">
                   <em>Time entry has been modified</em>
                 </div>
@@ -217,7 +217,7 @@ export const TimeEntryApproval = ({ toolCall, onApprove, onCancel }: TimeEntryAp
 
             <div className="approval-buttons">
               <button type="submit" className="approve-button">
-                {isModified ? 'Save Changes' : 'Approve'}
+                {isDirty ? 'Save Changes' : 'Approve'}
               </button>
               <button type="button" onClick={onCancel} className="cancel-button">
                 Cancel
