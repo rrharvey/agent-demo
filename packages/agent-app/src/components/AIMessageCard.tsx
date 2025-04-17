@@ -77,8 +77,13 @@ export const AIMessageCard = ({
     ...(contentHeight !== null ? { maxHeight: `${contentHeight}px`, overflow: 'hidden' } : {}),
   }
 
+  // Add a slightly darker background for the AI message card
+  const cardStyle = {
+    backgroundColor: '#d0e1f2', // A darker shade than the default --ai-msg-bg (#e6f0f9)
+  }
+
   return (
-    <div className="message ai-message">
+    <div className="message ai-message" style={cardStyle}>
       <div className="message-header">
         Assistant
         {isLoading && (

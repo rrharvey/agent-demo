@@ -27,21 +27,6 @@ body {
   height: 100vh;
 }
 
-body::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('./assets/background.webp');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  opacity: 0.2;
-  z-index: -1;
-}
-
 #root {
   height: 100vh;
 }
@@ -50,12 +35,35 @@ body::before {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  max-width: 800px;
   margin: 0 auto;
   padding: 1rem;
   background-color: rgba(71, 136, 199, 0.1);
   backdrop-filter: blur(8px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Media query for screens at least 1200px wide */
+@media (min-width: 1200px) {
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('./assets/background.webp');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    opacity: 0.2;
+    z-index: -1;
+  }
+
+  .chat-container {
+    width: 640px;
+    margin-left: 66%;
+    transform: translateX(-50%);
+  }
 }
 
 .chat-messages {
