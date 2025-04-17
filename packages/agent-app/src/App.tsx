@@ -68,7 +68,7 @@ export default function App() {
           ref={inputRef}
           type="text"
           name="message"
-          placeholder="Type your message here..."
+          placeholder="Type your time entry or question here..."
           disabled={isLoading}
           className="message-input"
           autoComplete="off"
@@ -90,23 +90,27 @@ export default function App() {
       </form>
 
       <div className="chat-messages">
-        {lastAIMessage && <MessageRenderer key={lastAIMessage.id || `local-${Date.now()}`} message={lastAIMessage} />}
-        {isLoading && <LoadingIndicator />}
+        {lastAIMessage && (
+          <MessageRenderer
+            key={lastAIMessage.id || `local-${Date.now()}`}
+            message={lastAIMessage}
+            isLoading={isLoading}
+          />
+        )}
+        {review && (
+          <TimeEntryApproval
+            toolCall={interruptValue.tool_call}
+            onApprove={() => {
+              submit(undefined, { command: { resume: { action: 'continue' } } })
+            }}
+            onCancel={() => {
+              submit(undefined, {
+                command: { resume: { action: 'cancel' } },
+              })
+            }}
+          />
+        )}
       </div>
-
-      {review && (
-        <TimeEntryApproval
-          toolCall={interruptValue.tool_call}
-          onApprove={() => {
-            submit(undefined, { command: { resume: { action: 'continue' } } })
-          }}
-          onCancel={() => {
-            submit(undefined, {
-              command: { resume: { action: 'cancel' } },
-            })
-          }}
-        />
-      )}
     </div>
   )
 }
