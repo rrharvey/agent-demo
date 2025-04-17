@@ -10,7 +10,9 @@ builder.Services.AddCors();
 // Configure EF Core with SQLite
 builder.Services.AddDbContext<Api.Data.ApplicationDbContext>(options =>
   options
-    .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=timetracker.db")
+    .UseSqlite(
+      builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=../../data/timetracker.db"
+    )
     .UseSeeding(DemoData.SeedData)
 );
 
