@@ -4,7 +4,8 @@
   --primary-light: #72a8d8; /* Lighter blue variant */
   --primary-dark: #2c5d8f; /* Darker blue variant */
   --accent-color: #ffc85e; /* Golden yellow color */
-  --user-msg-bg: #f3f4f6; /* Light gray background */
+  --complementary-color: #e67e22; /* Complementary orange for the background wash */
+  --user-msg-bg: #e7ebeb; /* Light gray background */
   --ai-msg-bg: #e6f0f9; /* Light blue background for AI messages */
   --border-color: #d0d7e1; /* Subtle border color */
   --text-primary: #333333; /* Dark gray text */
@@ -60,10 +61,24 @@ body {
     z-index: -1;
   }
 
+  /* Add complementary color wash over the background */
+  body::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(230, 126, 34, 0.15) 0%, rgba(255, 200, 94, 0.1) 100%);
+    z-index: -1;
+  }
+
   .chat-container {
     width: 640px;
     margin-left: 60%;
     transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
   }
 }
 
