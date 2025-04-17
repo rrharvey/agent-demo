@@ -214,7 +214,8 @@ body::before {
   background-color: var(--accent-color);
 }
 
-.time-entry-details {
+.time-entry-details,
+.time-entry-form {
   margin: 1rem 0;
   list-style-type: none;
   padding: 1rem;
@@ -224,6 +225,60 @@ body::before {
 
 .time-entry-details li {
   margin-bottom: 0.5rem;
+}
+
+/* Form styling */
+.form-group {
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.form-group label {
+  min-width: 70px;
+  margin-right: 0.5rem;
+}
+
+.form-group input,
+.form-group select.form-select {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  height: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+}
+
+/* Styling for select placeholder option */
+.form-group select.form-select option:first-child {
+  color: #9ca3af; /* Light grey color for placeholder text */
+  font-style: italic;
+}
+
+/* Style for select element with nothing selected (showing placeholder) */
+.form-group select.form-select:invalid,
+.form-group select.form-select option[value=''] {
+  color: #9ca3af; /* Light grey color for placeholder text */
+  font-style: italic;
+}
+
+.form-group input:focus,
+.form-group select.form-select:focus {
+  outline: 1px solid var(--primary-light);
+  border-color: var(--primary-light);
+}
+
+.form-group select.form-select:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.modified-indicator {
+  font-size: 0.8rem;
+  color: var(--primary-dark);
+  margin-top: 0.5rem;
+  text-align: right;
 }
 
 .approval-buttons {
