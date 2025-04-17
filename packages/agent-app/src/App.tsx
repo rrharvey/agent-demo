@@ -3,7 +3,6 @@
 import type { Message } from '@langchain/langgraph-sdk'
 import { useStream } from '@langchain/langgraph-sdk/react'
 import { useEffect, useRef, useState } from 'react'
-import { LoadingIndicator } from './components/LoadingIndicator'
 import { MessageRenderer } from './components/MessageRenderer'
 import { TimeEntryApproval } from './components/TimeEntryApproval'
 import { InterruptValue } from './models'
