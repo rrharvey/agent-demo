@@ -1,5 +1,4 @@
 from datetime import date
-from db_access import DatabaseAccess
 from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import RemoveMessage
@@ -47,29 +46,25 @@ def book_time_entry(clientName: str, projectName: str, projectId: str, date: str
 
 
 @tool
-def get_database_schema():
+def get_time_entries(start_date: str, end_date: str, projectId=None):
     """
-    Returns the database schema for the time tracking system.
+    Fetches time entries for a specific project within a date range.
+
+    Args:
+        projectId (str): The ID of the project.
+        start_date (str): The start date in ISO format (YYYY-MM-DD).
+        end_date (str): The end date in ISO format (YYYY-MM-DD).
+
+    Returns:
+        List[Dict]: A list of time entry objects.
     """
-    db = DatabaseAccess()
-    schema = db.get_schema()
-    return schema
+    client = TimeTrackingApiClient(base_url)
+    entries = client.get_time_entries(
+        'user1234', projectId, start_date, end_date)
+    return entries
 
 
-@tool
-def execute_query(query: str):
-    """
-    Executes a SQL SELECT query on the time tracking database.
-    """
-    # Check if query contains any data modification keywords
-    if any(keyword in query.lower() for keyword in ["delete", "insert", "update"]):
-        return "You are not allowed to modify existing data. You may only create new time entries."
-    db = DatabaseAccess()
-    result = db.execute_query(query)
-    return result
-
-
-tools = [get_projects, book_time_entry, get_database_schema, execute_query]
+tools = [get_projects, book_time_entry, get_time_entries]
 
 model = ChatAnthropic(model="claude-3-7-sonnet-20250219",
                       temperature=0).bind_tools(tools)

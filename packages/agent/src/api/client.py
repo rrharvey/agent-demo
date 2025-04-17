@@ -31,6 +31,52 @@ class TimeTrackingApiClient:
         except requests.exceptions.RequestException as e:
             raise Exception(f"Failed to fetch projects: {str(e)}")
 
+    def get_time_entries(
+        self,
+        user_id: str,
+        project_id: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get time entries for a user with optional filtering.
+
+        Args:
+            user_id: The ID of the user to get time entries for.
+            project_id: Optional ID of the project to filter by.
+            start_date: Optional start date in ISO format (YYYY-MM-DD) to filter from.
+                        Defaults to the first day of the previous month.
+            end_date: Optional end date in ISO format (YYYY-MM-DD) to filter to.
+                      Defaults to the last day of the current month.
+
+        Returns:
+            A list of time entry objects.
+
+        Raises:
+            Exception: If the API request fails.
+        """
+        params = {"userId": user_id}
+
+        if project_id:
+            params["projectId"] = project_id
+
+        if start_date:
+            params["startDate"] = start_date
+
+        if end_date:
+            params["endDate"] = end_date
+
+        try:
+            response = requests.get(
+                f"{self.base_url}/time-entries",
+                params=params
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result["timeEntries"]
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to fetch time entries: {str(e)}")
+
     def create_time_entry(
         self,
         project_id: str,
