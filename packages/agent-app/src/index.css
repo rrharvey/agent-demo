@@ -23,7 +23,24 @@ body {
   line-height: 1.5;
   color: var(--text-primary);
   background-color: #f9fafb;
+  position: relative;
   height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('./assets/background.webp');
+  background-size: cover;
+  background-position: -40% 60%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.2; /* 90% transparent (0.1 opacity) */
+  z-index: -1;
 }
 
 #root {
@@ -37,6 +54,9 @@ body {
   max-width: 800px;
   margin: 0 auto;
   padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .chat-messages {
@@ -86,10 +106,17 @@ body {
   margin: 0.5rem 0;
 }
 
+.message-content ol {
+  padding-left: 2rem;
+  margin: 0.5rem 0;
+}
+
 .message-input-form {
   display: flex;
   gap: 0.5rem;
   padding: 1rem;
+  margin-top: 10vh;
+  margin-bottom: 1rem;
   background-color: white;
   border-radius: 0.1875rem;
   box-shadow: var(--shadow);

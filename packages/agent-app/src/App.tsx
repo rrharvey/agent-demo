@@ -9,7 +9,6 @@ import { TimeEntryApproval } from './components/TimeEntryApproval'
 import { InterruptValue } from './models'
 
 export default function App() {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [localMessages, setLocalMessages] = useState<Message[]>([])
   const { messages, isLoading, submit, stop, interrupt } = useStream<{ messages: Message[] }>({
@@ -24,11 +23,6 @@ export default function App() {
     }
   }, [messages])
 
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [localMessages, isLoading])
-
   // Set focus to input field when assistant finishes responding
   useEffect(() => {
     if (!isLoading && messages.length > 0) {
@@ -39,30 +33,11 @@ export default function App() {
   const interruptValue = interrupt ? InterruptValue.parse(interrupt.value) : null
   const review = interruptValue?.tool_call.name === 'book_time_entry'
 
+  // Find the most recent AI message
+  const lastAIMessage = [...localMessages].reverse().find((message) => message.type === 'ai')
+
   return (
     <div className="chat-container">
-      <div className="chat-messages">
-        {localMessages.map((message) => (
-          <MessageRenderer key={message.id || `local-${Date.now()}`} message={message} />
-        ))}
-        {isLoading && <LoadingIndicator />}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {review && (
-        <TimeEntryApproval
-          toolCall={interruptValue.tool_call}
-          onApprove={() => {
-            submit(undefined, { command: { resume: { action: 'continue' } } })
-          }}
-          onCancel={() => {
-            submit(undefined, {
-              command: { resume: { action: 'cancel' } },
-            })
-          }}
-        />
-      )}
-
       <form
         className="message-input-form"
         onSubmit={(e) => {
@@ -113,6 +88,25 @@ export default function App() {
           </button>
         )}
       </form>
+
+      <div className="chat-messages">
+        {lastAIMessage && <MessageRenderer key={lastAIMessage.id || `local-${Date.now()}`} message={lastAIMessage} />}
+        {isLoading && <LoadingIndicator />}
+      </div>
+
+      {review && (
+        <TimeEntryApproval
+          toolCall={interruptValue.tool_call}
+          onApprove={() => {
+            submit(undefined, { command: { resume: { action: 'continue' } } })
+          }}
+          onCancel={() => {
+            submit(undefined, {
+              command: { resume: { action: 'cancel' } },
+            })
+          }}
+        />
+      )}
     </div>
   )
 }
