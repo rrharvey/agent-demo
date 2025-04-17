@@ -1,4 +1,5 @@
 import { isComplexContentArray, isImageUrlContent, isStringContent, isTextContent } from '../contentTypes'
+import Markdown from 'react-markdown'
 
 export const ContentRenderer = ({ content }: { content: unknown }) => {
   if (isStringContent(content)) {
@@ -10,7 +11,11 @@ export const ContentRenderer = ({ content }: { content: unknown }) => {
       <>
         {content.map((item, idx) => {
           if (isTextContent(item)) {
-            return <div key={idx}>{item.text}</div>
+            return (
+              <Markdown key={idx} disallowedElements={['a']}>
+                {item.text}
+              </Markdown>
+            )
           }
 
           if (isImageUrlContent(item)) {

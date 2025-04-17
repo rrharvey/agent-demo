@@ -57,7 +57,7 @@ export default function App() {
           }}
           onCancel={() => {
             submit(undefined, {
-              command: { resume: { action: 'feedback', data: 'That does not look right. We should start over.' } },
+              command: { resume: { action: 'cancel' } },
             })
           }}
         />
