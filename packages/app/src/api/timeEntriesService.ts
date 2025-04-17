@@ -2,11 +2,11 @@ import { queryOptions } from '@tanstack/react-query'
 import { apiClient } from './client'
 import {
   GetTimeEntriesParams,
+  GetTimeEntriesResult,
   GetTimeEntryByIdResult,
   TimeEntry,
   TimeEntryCreateDto,
   TimeEntryUpdateDto,
-  GetTimeEntriesResult,
 } from './types'
 
 // Query option creators for time entries
@@ -78,4 +78,6 @@ export const getTimeEntriesForUserQuery = (params: GetTimeEntriesParams) =>
   queryOptions({
     queryKey: timeEntryKeys.forUser(params),
     queryFn: () => timeEntriesService.getTimeEntriesForUser(params),
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   })
