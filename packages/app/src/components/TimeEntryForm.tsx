@@ -265,8 +265,6 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Card
         sx={{
-          borderTop: '4px solid',
-          borderColor: 'primary.main',
           borderRadius: '8px',
         }}
       >
@@ -286,11 +284,6 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                   value={selectedClientId}
                   label="Client"
                   onChange={handleClientChange}
-                  sx={{
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: selectedClientId ? 'primary.light' : 'inherit',
-                    },
-                  }}
                 >
                   <MenuItem value="">
                     <em>Select a client</em>
@@ -315,11 +308,6 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                   label="Project"
                   onChange={handleProjectChange}
                   disabled={!selectedClientId || projects.length === 0}
-                  sx={{
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: formValues.projectId ? 'secondary.light' : 'inherit',
-                    },
-                  }}
                 >
                   <MenuItem value="">
                     <em>Select a project</em>
