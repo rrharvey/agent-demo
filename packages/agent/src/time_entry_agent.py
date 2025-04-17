@@ -1,9 +1,9 @@
 from datetime import date
 from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import AIMessage, SystemMessage
+from langchain_core.messages import SystemMessage, ToolMessage
+from langchain_core.messages import RemoveMessage
 from langchain_core.tools import tool
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, START, END, MessagesState
 from langgraph.prebuilt import ToolNode
 from langgraph.types import Command, interrupt
@@ -33,7 +33,7 @@ def book_time_entry(clientName: str, projectName: str, projectId: str, date: str
     """
     Books a time entry for a given project.
 
-    Args: 
+    Args:
         clientName (str): The name of the client.
         projectName (str): The name of the project.
         projectId (str): The unique identifier for the project.
@@ -47,7 +47,8 @@ def book_time_entry(clientName: str, projectName: str, projectId: str, date: str
 
 tools = [get_projects, book_time_entry]
 
-model = ChatAnthropic(model="claude-3-7-sonnet-20250219").bind_tools(tools)
+model = ChatAnthropic(model="claude-3-7-sonnet-20250219",
+                      temperature=0).bind_tools(tools)
 
 
 def load_system_prompt():
@@ -113,19 +114,13 @@ def review(state) -> Command[Literal["assistant", "tools"]]:
         print(updated_message)
         return Command(goto="tools", update={"messages": [updated_message]})
 
-    # provide feedback to LLM
-    elif review_action == "feedback":
-        # NOTE: we're adding feedback message as a ToolMessage
-        # to preserve the correct order in the message history
-        # (AI messages with tool calls need to be followed by tool call messages)
-        tool_message = {
-            "role": "tool",
-            # This is our natural language feedback
-            "content": review_data,
-            "name": tool_call["name"],
-            "tool_call_id": tool_call["id"],
-        }
-        return Command(goto="assistant", update={"messages": [tool_message]})
+    # if cancelled, remove all but the last message so the LLM doesn't have information about the cancelled entry
+    elif review_action == 'cancel':
+        updated_messages = [RemoveMessage(id=m.id)
+                            for m in state["messages"][:-1]]
+        updated_messages.append(ToolMessage(
+            "Let the user know that the entry was cancelled.", name=tool_call["name"], tool_call_id=tool_call["id"]))
+        return Command(goto="assistant", update={"messages": updated_messages})
 
 
 def route_after_llm(state) -> Literal[END, "review"]:
