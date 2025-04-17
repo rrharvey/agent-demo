@@ -263,9 +263,15 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Card>
+      <Card
+        sx={{
+          borderTop: '4px solid',
+          borderColor: 'primary.main',
+          borderRadius: '8px',
+        }}
+      >
         <CardContent>
-          <Typography variant="h5" component="h2" gutterBottom>
+          <Typography variant="h5" component="h2" gutterBottom color="primary.dark">
             {mode === 'create' ? 'Create' : 'Edit'} Time Entry
           </Typography>
 
@@ -280,6 +286,11 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                   value={selectedClientId}
                   label="Client"
                   onChange={handleClientChange}
+                  sx={{
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: selectedClientId ? 'primary.light' : 'inherit',
+                    },
+                  }}
                 >
                   <MenuItem value="">
                     <em>Select a client</em>
@@ -304,6 +315,11 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                   label="Project"
                   onChange={handleProjectChange}
                   disabled={!selectedClientId || projects.length === 0}
+                  sx={{
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: formValues.projectId ? 'secondary.light' : 'inherit',
+                    },
+                  }}
                 >
                   <MenuItem value="">
                     <em>Select a project</em>
@@ -329,6 +345,13 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                 required
                 fullWidth
                 slotProps={{ inputLabel: { shrink: true } }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'primary.main',
+                    },
+                  },
+                }}
               />
 
               <TextField
@@ -351,15 +374,23 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                     max: '24',
                   },
                 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'secondary.main',
+                    },
+                  },
+                }}
               />
             </Box>
 
-            <Stack direction="row" spacing={2} sx={{ mt: 3, justifyContent: 'flex-end' }}>
+            <Stack direction="row" spacing={2} sx={{ mt: 4, justifyContent: 'flex-end' }}>
               <Button
                 variant="outlined"
                 onClick={() => navigate({ to: '/time-entries' })}
                 disabled={isPending}
                 startIcon={<CancelIcon />}
+                sx={{ borderRadius: '6px', px: 3 }}
               >
                 Cancel
               </Button>
@@ -369,6 +400,7 @@ export function TimeEntryForm({ mode, timeEntryId }: TimeEntryFormProps) {
                 color="primary"
                 disabled={isPending || !formValues.projectId || !!hoursError || formValues.hours <= 0}
                 startIcon={<SaveIcon />}
+                sx={{ borderRadius: '6px', px: 3 }}
               >
                 {isPending ? 'Saving...' : 'Save'}
               </Button>

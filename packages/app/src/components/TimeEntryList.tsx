@@ -179,7 +179,7 @@ export function TimeEntryList() {
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h5" component="h2">
-          Time Entries
+          Demo Time Entry
         </Typography>
         <Button component={Link} to="/time-entries/new" variant="contained" color="primary" startIcon={<AddIcon />}>
           Add New Entry
@@ -224,7 +224,7 @@ export function TimeEntryList() {
         </Paper>
       ) : (
         <TableContainer component={Paper}>
-          <Table aria-label="time entries table">
+          <Table aria-label="time entries table" size="small">
             <TableHead>
               <TableRow>
                 <TableCell>Date</TableCell>
@@ -236,9 +236,9 @@ export function TimeEntryList() {
             <TableBody>
               {Object.entries(groupedEntries).map(([week, entries]) => (
                 <React.Fragment key={week}>
-                  <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.04)' }}>
+                  <TableRow sx={{ backgroundColor: 'primary.light', opacity: 0.8 }}>
                     <TableCell colSpan={4} sx={{ py: 1 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'medium', color: 'white' }}>
                         {week}
                       </Typography>
                     </TableCell>
@@ -246,14 +246,16 @@ export function TimeEntryList() {
                   {entries.map((entry: TimeEntry) => {
                     const projectDetails = getProjectDetails(entry.projectId)
                     return (
-                      <TableRow key={entry.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                      <TableRow key={entry.id}>
                         <TableCell>
                           {entry.date ? format(new Date(`${entry.date}T12:00:00`), 'EEE, MMM dd') : ''}
                         </TableCell>
                         <TableCell>
                           {projectDetails ? (
                             <>
-                              <Typography variant="subtitle2">{projectDetails.clientName}</Typography>
+                              <Typography variant="subtitle2" color="primary.dark">
+                                {projectDetails.clientName}
+                              </Typography>
                               <Typography variant="body2" color="text.secondary">
                                 {projectDetails.projectName}
                               </Typography>
@@ -270,6 +272,7 @@ export function TimeEntryList() {
                             size="small"
                             startIcon={<EditIcon />}
                             sx={{ mr: 1 }}
+                            color="secondary"
                           >
                             Edit
                           </Button>
@@ -287,9 +290,9 @@ export function TimeEntryList() {
                     )
                   })}
                   {/* Weekly total row */}
-                  <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
+                  <TableRow sx={{ backgroundColor: 'grey.100' }}>
                     <TableCell colSpan={2} sx={{ py: 1 }} />
-                    <TableCell sx={{ fontWeight: 'bold', py: 1 }}>
+                    <TableCell sx={{ fontWeight: 'bold', py: 1, color: 'secondary.main' }}>
                       {entries.reduce((total, entry) => total + entry.hours, 0).toFixed(2)}
                     </TableCell>
                     <TableCell sx={{ py: 1 }} />

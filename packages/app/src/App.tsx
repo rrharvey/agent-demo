@@ -1,19 +1,24 @@
+import { CssBaseline, ThemeProvider } from '@mui/material'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Outlet, RouterProvider, createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { TimeEntryForm } from './components/TimeEntryForm'
 import { TimeEntryList } from './components/TimeEntryList'
+import theme from './theme'
 
 // Root route with layout
 const rootRoute = createRootRoute({
   component: () => (
-    <div className="app-container">
-      <main className="app-content">
-        <Outlet />
-      </main>
-      <TanStackRouterDevtools />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <div className="app-container">
+        <main className="app-content">
+          <Outlet />
+        </main>
+        <TanStackRouterDevtools />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </div>
+    </ThemeProvider>
   ),
 })
 
