@@ -2,7 +2,9 @@
 
 import type { Message } from '@langchain/langgraph-sdk'
 import { useStream } from '@langchain/langgraph-sdk/react'
+import { usePrefetchQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
+import { projectsOptions } from './api'
 import { LoadingIndicator } from './components/LoadingIndicator'
 import { MessageRenderer } from './components/MessageRenderer'
 import { TimeEntryApproval } from './components/TimeEntryApproval'
@@ -15,6 +17,8 @@ export default function App() {
     apiUrl: 'http://localhost:2024',
     assistantId: 'time_entry',
   })
+
+  usePrefetchQuery(projectsOptions())
 
   // Sync backend messages with local state
   useEffect(() => {
