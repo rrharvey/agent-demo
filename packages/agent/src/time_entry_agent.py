@@ -92,27 +92,26 @@ def review(state) -> Command[Literal["assistant", "tools"]]:
 
     # update the AI message AND call tools
     elif review_action == "update":
-        print("last_message:")
-        print(last_message)
-        updated_message = {
+        print(state["messages"])
+        updated_messages = [RemoveMessage(id=m.id)
+                            for m in state["messages"][:-1]]
+        updated_messages.append({
             "role": "ai",
             "content": last_message.content,
             "tool_calls": [
-                {
-                    "name": tool_call["name"],
-                    "id": tool_call["id"],
-                    "type": "tool_call",
-                    # This the update provided by the human
-                    "args": review_data,
-                }
+                    {
+                        "name": tool_call["name"],
+                        "id": tool_call["id"],
+                        "type": "tool_call",
+                        # This the update provided by the human
+                        "args": review_data,
+                    }
             ],
             # This is important - this needs to be the same as the message you replacing!
             # Otherwise, it will show up as a separate message
             "id": last_message.id,
-        }
-        print("updated_message:")
-        print(updated_message)
-        return Command(goto="tools", update={"messages": [updated_message]})
+        })
+        return Command(goto="tools", update={"messages": updated_messages})
 
     # if cancelled, remove all but the last message so the LLM doesn't have information about the cancelled entry
     elif review_action == 'cancel':

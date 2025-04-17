@@ -96,9 +96,9 @@ public class TimeEntryEndpoints : EndpointGroupBase
     }
   }
 
-  private async Task<Results<Created<TimeEntry>, BadRequest<string>>> CreateTimeEntry(
+  private async Task<Results<Created<TimeEntryDto>, BadRequest<string>>> CreateTimeEntry(
     [FromBody] CreateTimeEntryCommand command,
-    [FromServices] ICommandHandler<CreateTimeEntryCommand, TimeEntry> handler,
+    [FromServices] ICommandHandler<CreateTimeEntryCommand, TimeEntryDto> handler,
     CancellationToken cancellationToken
   )
   {

@@ -218,12 +218,6 @@ export const TimeEntryApproval = ({ toolCall, onApprove, onCancel, onUpdate }: T
                   )}
                 />
               </div>
-
-              {isDirty && (
-                <div className="modified-indicator">
-                  <em>Time entry has been modified</em>
-                </div>
-              )}
             </div>
 
             <div className="approval-buttons">

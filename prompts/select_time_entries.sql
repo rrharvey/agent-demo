@@ -6,5 +6,3 @@ select
     Hours
 from TimeEntries join Projects on TimeEntries.ProjectId = Projects.Id
 join Clients on Projects.ClientId = Clients.Id
-
-delete from TimeEntries

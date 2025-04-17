@@ -61,7 +61,7 @@ body {
 
   .chat-container {
     width: 640px;
-    margin-left: 66%;
+    margin-left: 60%;
     transform: translateX(-50%);
   }
 }
