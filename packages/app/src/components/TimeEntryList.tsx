@@ -119,10 +119,14 @@ export function TimeEntryList() {
     const weeks: { [key: string]: TimeEntry[] } = {}
 
     entries.forEach((entry) => {
-      const entryDate = new Date(entry.date)
-      const weekStart = startOfWeek(entryDate)
-      const weekEnd = endOfWeek(entryDate)
-      const weekKey = `${format(weekStart, 'MMM dd')} - ${format(weekEnd, 'MMM dd')}`
+      // Create a date with a fixed time to avoid timezone issues
+      // Use noon (12:00) to ensure the date doesn't shift due to timezone differences
+      const entryDate = new Date(`${entry.date}T12:00:00`)
+
+      // Use Monday as start of week (1) and Sunday as end of week (0)
+      const weekStart = startOfWeek(entryDate, { weekStartsOn: 1 })
+      const weekEnd = endOfWeek(entryDate, { weekStartsOn: 1 })
+      const weekKey = `${format(weekStart, 'MMM dd')} - ${format(weekEnd, 'MMM dd, yyyy')}`
 
       if (!weeks[weekKey]) {
         weeks[weekKey] = []
@@ -244,7 +248,7 @@ export function TimeEntryList() {
                     return (
                       <TableRow key={entry.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                         <TableCell>
-                          {entry.date ? format(new Date(`${entry.date}T00:00:00`), 'EEE, MMM dd, yyyy') : ''}
+                          {entry.date ? format(new Date(`${entry.date}T12:00:00`), 'EEE, MMM dd') : ''}
                         </TableCell>
                         <TableCell>
                           {projectDetails ? (
