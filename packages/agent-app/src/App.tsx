@@ -22,6 +22,7 @@ export default function App() {
     assistantId: 'time_entry',
   })
 
+  const [usingVoiceInput, setUsingVoiceInput] = useState(false)
   const {
     transcript: currentTranscript,
     listening,
@@ -43,10 +44,11 @@ export default function App() {
   useEffect(() => {
     // Only try to submit if we were listening and now we're not (recognition ended)
     // AND we have content in the transcript
-    if (!listening && transcript.trim() && formRef.current) {
+    if (usingVoiceInput && !listening && transcript.trim() && formRef.current) {
       formRef.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))
+      setUsingVoiceInput(false)
     }
-  }, [listening, transcript])
+  }, [listening, transcript, usingVoiceInput])
 
   usePrefetchQuery(projectsOptions())
 
@@ -74,9 +76,11 @@ export default function App() {
 
   const handleVoiceInput = () => {
     if (listening) {
+      setUsingVoiceInput(false)
       SpeechRecognition.stopListening()
     } else {
       resetTranscript()
+      setUsingVoiceInput(true)
       SpeechRecognition.startListening()
     }
   }
