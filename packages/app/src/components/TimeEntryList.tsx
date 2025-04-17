@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { format } from 'date-fns'
-import { useState } from 'react'
+import { endOfWeek, format, startOfWeek } from 'date-fns'
+import React, { useState } from 'react'
 import { TimeEntry } from '../api/types'
 // MUI imports
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, FilterAlt as FilterIcon } from '@mui/icons-material'
@@ -114,6 +114,25 @@ export function TimeEntryList() {
     setEndDate(newEndDate)
   }
 
+  // Group time entries by week
+  const groupTimeEntriesByWeek = (entries: TimeEntry[]) => {
+    const weeks: { [key: string]: TimeEntry[] } = {}
+
+    entries.forEach((entry) => {
+      const entryDate = new Date(entry.date)
+      const weekStart = startOfWeek(entryDate)
+      const weekEnd = endOfWeek(entryDate)
+      const weekKey = `${format(weekStart, 'MMM dd')} - ${format(weekEnd, 'MMM dd')}`
+
+      if (!weeks[weekKey]) {
+        weeks[weekKey] = []
+      }
+      weeks[weekKey].push(entry)
+    })
+
+    return weeks
+  }
+
   if (isLoadingTimeEntries || isLoadingClients) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -149,6 +168,8 @@ export function TimeEntryList() {
 
     return clientNameA.localeCompare(clientNameB)
   })
+
+  const groupedEntries = groupTimeEntriesByWeek(timeEntriesList)
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -209,49 +230,60 @@ export function TimeEntryList() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {timeEntriesList.map((entry: TimeEntry) => {
-                const projectDetails = getProjectDetails(entry.projectId)
-                return (
-                  <TableRow key={entry.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell>
-                      {entry.date ? format(new Date(`${entry.date}T00:00:00`), 'EEE, MMM dd, yyyy') : ''}
-                    </TableCell>
-                    <TableCell>
-                      {projectDetails ? (
-                        <>
-                          <Typography variant="subtitle2">{projectDetails.clientName}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {projectDetails.projectName}
-                          </Typography>
-                        </>
-                      ) : (
-                        entry.projectId
-                      )}
-                    </TableCell>
-                    <TableCell>{entry.hours}</TableCell>
-                    <TableCell align="right">
-                      <Button
-                        component={Link}
-                        to={`/time-entries/${entry.id}`}
-                        size="small"
-                        startIcon={<EditIcon />}
-                        sx={{ mr: 1 }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="small"
-                        color="error"
-                        startIcon={<DeleteIcon />}
-                        onClick={() => handleDeleteClick(entry.id)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        Delete
-                      </Button>
+              {Object.entries(groupedEntries).map(([week, entries]) => (
+                <React.Fragment key={week}>
+                  <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.04)' }}>
+                    <TableCell colSpan={4} sx={{ py: 1 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
+                        {week}
+                      </Typography>
                     </TableCell>
                   </TableRow>
-                )
-              })}
+                  {entries.map((entry: TimeEntry) => {
+                    const projectDetails = getProjectDetails(entry.projectId)
+                    return (
+                      <TableRow key={entry.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell>
+                          {entry.date ? format(new Date(`${entry.date}T00:00:00`), 'EEE, MMM dd, yyyy') : ''}
+                        </TableCell>
+                        <TableCell>
+                          {projectDetails ? (
+                            <>
+                              <Typography variant="subtitle2">{projectDetails.clientName}</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {projectDetails.projectName}
+                              </Typography>
+                            </>
+                          ) : (
+                            entry.projectId
+                          )}
+                        </TableCell>
+                        <TableCell>{entry.hours}</TableCell>
+                        <TableCell align="right">
+                          <Button
+                            component={Link}
+                            to={`/time-entries/${entry.id}`}
+                            size="small"
+                            startIcon={<EditIcon />}
+                            sx={{ mr: 1 }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="small"
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            onClick={() => handleDeleteClick(entry.id)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </React.Fragment>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
