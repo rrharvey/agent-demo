@@ -36,10 +36,9 @@ body::before {
   bottom: 0;
   background-image: url('./assets/background.webp');
   background-size: cover;
-  background-position: -40% 60%;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  opacity: 0.2; /* 90% transparent (0.1 opacity) */
+  opacity: 0.2;
   z-index: -1;
 }
 
