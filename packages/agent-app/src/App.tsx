@@ -3,6 +3,7 @@
 import type { Message } from '@langchain/langgraph-sdk'
 import { useStream } from '@langchain/langgraph-sdk/react'
 import { useEffect, useRef, useState } from 'react'
+import { LoadingIndicator } from './components/LoadingIndicator'
 import { MessageRenderer } from './components/MessageRenderer'
 import { TimeEntryApproval } from './components/TimeEntryApproval'
 import { InterruptValue } from './models'
@@ -32,8 +33,10 @@ export default function App() {
   const interruptValue = interrupt ? InterruptValue.parse(interrupt.value) : null
   const review = interruptValue?.tool_call.name === 'book_time_entry'
 
-  // Find the most recent AI message
-  const lastAIMessage = [...localMessages].reverse().find((message) => message.type === 'ai')
+  // Find the most recent AI and human messages
+  const reversed = [...localMessages].reverse()
+  const lastAIMessage = reversed.find((message) => message.type === 'ai')
+  const lastHumanMessage = reversed.find((message) => message.type === 'human')
 
   return (
     <div className="chat-container">
@@ -89,13 +92,22 @@ export default function App() {
       </form>
 
       <div className="chat-messages">
+        {lastHumanMessage && (
+          <MessageRenderer
+            key={lastHumanMessage.id || `local-${Date.now()}`}
+            message={lastHumanMessage}
+            isLoading={isLoading}
+          />
+        )}
         {lastAIMessage && (
           <MessageRenderer
             key={lastAIMessage.id || `local-${Date.now()}`}
             message={lastAIMessage}
             isLoading={isLoading}
+            userMessageId={lastHumanMessage?.id}
           />
         )}
+        {lastHumanMessage && !lastAIMessage && <LoadingIndicator />}
         {review && (
           <TimeEntryApproval
             toolCall={interruptValue.tool_call}

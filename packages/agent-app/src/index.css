@@ -66,6 +66,7 @@ body::before {
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 1rem;
+  width: 100%;
 }
 
 .message {
@@ -194,6 +195,12 @@ body::before {
 
 .typing-indicator span:nth-child(3) {
   animation-delay: 0.4s;
+}
+
+/* Fade-out animation for AI messages when busy */
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
 }
 
 /* Time Entry Approval styles */
