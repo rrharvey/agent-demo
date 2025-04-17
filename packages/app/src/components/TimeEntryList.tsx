@@ -234,71 +234,72 @@ export function TimeEntryList() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {Object.entries(groupedEntries).map(([week, entries]) => (
-                <React.Fragment key={week}>
-                  <TableRow sx={{ backgroundColor: 'primary.light', opacity: 0.8 }}>
-                    <TableCell colSpan={4} sx={{ py: 1 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 'medium', color: 'white' }}>
-                        {week}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                  {entries.map((entry: TimeEntry) => {
-                    const projectDetails = getProjectDetails(entry.projectId)
-                    return (
-                      <TableRow key={entry.id}>
-                        <TableCell>
-                          {entry.date ? format(new Date(`${entry.date}T12:00:00`), 'EEE, MMM dd') : ''}
-                        </TableCell>
-                        <TableCell>
-                          {projectDetails ? (
-                            <>
-                              <Typography variant="subtitle2" color="primary.dark">
-                                {projectDetails.clientName}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {projectDetails.projectName}
-                              </Typography>
-                            </>
-                          ) : (
-                            entry.projectId
-                          )}
-                        </TableCell>
-                        <TableCell>{entry.hours}</TableCell>
-                        <TableCell align="right">
-                          <Button
-                            component={Link}
-                            to={`/time-entries/${entry.id}`}
-                            size="small"
-                            startIcon={<EditIcon />}
-                            sx={{ mr: 1 }}
-                            color="secondary"
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="small"
-                            color="error"
-                            startIcon={<DeleteIcon />}
-                            onClick={() => handleDeleteClick(entry.id)}
-                            disabled={deleteMutation.isPending}
-                          >
-                            Delete
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                  {/* Weekly total row */}
-                  <TableRow sx={{ backgroundColor: 'grey.100' }}>
-                    <TableCell colSpan={2} sx={{ py: 1 }} />
-                    <TableCell sx={{ fontWeight: 'bold', py: 1, color: 'secondary.main' }}>
-                      {entries.reduce((total, entry) => total + entry.hours, 0).toFixed(2)}
-                    </TableCell>
-                    <TableCell sx={{ py: 1 }} />
-                  </TableRow>
-                </React.Fragment>
-              ))}
+              {Object.entries(groupedEntries).map(([week, entries]) => {
+                const weeklyTotal = entries.reduce((total, entry) => total + entry.hours, 0).toFixed(2)
+                return (
+                  <React.Fragment key={week}>
+                    <TableRow sx={{ backgroundColor: 'primary.light', opacity: 0.8 }}>
+                      <TableCell colSpan={2} sx={{ py: 1 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'medium', color: 'white' }}>
+                          {week}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 1 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'medium', color: 'white' }}>
+                          {weeklyTotal}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 1 }} />
+                    </TableRow>
+                    {entries.map((entry: TimeEntry) => {
+                      const projectDetails = getProjectDetails(entry.projectId)
+                      return (
+                        <TableRow key={entry.id}>
+                          <TableCell>
+                            {entry.date ? format(new Date(`${entry.date}T12:00:00`), 'EEE, MMM dd') : ''}
+                          </TableCell>
+                          <TableCell>
+                            {projectDetails ? (
+                              <>
+                                <Typography variant="subtitle2" color="primary.dark">
+                                  {projectDetails.clientName}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {projectDetails.projectName}
+                                </Typography>
+                              </>
+                            ) : (
+                              entry.projectId
+                            )}
+                          </TableCell>
+                          <TableCell>{entry.hours}</TableCell>
+                          <TableCell align="right">
+                            <Button
+                              component={Link}
+                              to={`/time-entries/${entry.id}`}
+                              size="small"
+                              startIcon={<EditIcon />}
+                              sx={{ mr: 1 }}
+                              color="secondary"
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              size="small"
+                              color="error"
+                              startIcon={<DeleteIcon />}
+                              onClick={() => handleDeleteClick(entry.id)}
+                              disabled={deleteMutation.isPending}
+                            >
+                              Delete
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </React.Fragment>
+                )
+              })}
             </TableBody>
           </Table>
         </TableContainer>
