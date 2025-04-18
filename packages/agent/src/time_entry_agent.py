@@ -135,7 +135,7 @@ def review(state) -> Command[Literal["assistant", "tools"]]:
         updated_messages = [RemoveMessage(id=m.id)
                             for m in state["messages"][:-1]]
         updated_messages.append(ToolMessage(
-            "Successfully canceled the time entry. You're welcome.", name=tool_call["name"], tool_call_id=tool_call["id"]))
+            "Thank you for assisting but I decided not to create that entry.", name=tool_call["name"], tool_call_id=tool_call["id"]))
         return Command(goto="assistant", update={"messages": updated_messages})
 
 
