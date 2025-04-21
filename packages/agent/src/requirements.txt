@@ -4,3 +4,5 @@ langchain-community
 langchain-core
 langgraph
 langgraph-prebuilt
+langchain-google-genai
+langgraph-cli[inmem]
